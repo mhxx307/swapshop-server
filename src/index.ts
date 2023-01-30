@@ -7,7 +7,7 @@ import { User } from "./entities/User";
 import { ApolloServer } from "@apollo/server";
 import { buildSchema } from "type-graphql";
 import { expressMiddleware } from "@apollo/server/express4";
-import { HelloResolver } from "./resolvers/Hello";
+import { HelloResolver } from "./resolvers";
 
 const main = async () => {
     const app = express();
