@@ -3,10 +3,11 @@ import 'reflect-metadata';
 import express from 'express';
 import cors from 'cors';
 import { DataSource } from 'typeorm';
-import { User } from './entities/User';
+import { expressMiddleware } from '@apollo/server/express4';
 import { ApolloServer } from '@apollo/server';
 import { buildSchema } from 'type-graphql';
-import { expressMiddleware } from '@apollo/server/express4';
+
+import { User } from './entities';
 import { HelloResolver, UserResolver } from './resolvers';
 
 const main = async () => {

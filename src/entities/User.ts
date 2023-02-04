@@ -10,7 +10,7 @@ import {
 
 @ObjectType()
 @Entity()
-export class User extends BaseEntity {
+export default class User extends BaseEntity {
     @Field((_type) => ID)
     @PrimaryGeneratedColumn()
     id!: number;
@@ -26,9 +26,13 @@ export class User extends BaseEntity {
     @Column()
     email!: string;
 
+    // @Field({ nullable: true })
+    // @Column({nullable: true})
+    // address?: string;
+
     @Field()
     @Column()
-    address?: string;
+    address!: string;
 
     @Field()
     @CreateDateColumn()

@@ -1,19 +1,40 @@
 import { Arg, Mutation, Resolver } from 'type-graphql';
-import { User } from '../entities/User';
 import * as argon2 from 'argon2';
+
+import { User } from '../entities';
+import { RegisterInput, UserMutationResponse } from '../types';
 
 @Resolver()
 export default class UserResolver {
-    @Mutation((returns) => User, { nullable: true })
+    @Mutation(() => UserMutationResponse, { nullable: true })
     async register(
-        @Arg('email') email: string,
-        @Arg('username') username: string,
-        @Arg('password') password: string,
-        @Arg('address') address: string
-    ) {
+        @Arg('registerInput')
+        { username, password, email, address }: RegisterInput
+    ): Promise<UserMutationResponse> {
         try {
-            const existUser = await User.findOneBy({ username });
-            if (existUser) return null;
+            const existUser = await User.findOne({
+                where: [{ username }, { email }],
+            });
+            if (existUser)
+                return {
+                    code: 400,
+                    success: false,
+                    message: 'Duplicated username or email',
+                    errors: [
+                        {
+                            field: `Duplicated ${
+                                existUser.username === username
+                                    ? 'username'
+                                    : 'email'
+                            }`,
+                            message: `${
+                                existUser.username === username
+                                    ? `Username ${username}`
+                                    : `Email ${email}`
+                            } already taken`,
+                        },
+                    ],
+                };
 
             const hashPassword = await argon2.hash(password);
 
@@ -24,9 +45,29 @@ export default class UserResolver {
                 address,
             });
 
-            return await User.save(newUser);
+            return {
+                code: 200,
+                success: true,
+                message: 'User registration successfully',
+                user: await User.save(newUser),
+            };
         } catch (error) {
-            console.log(error);
+            if (error instanceof Error) {
+                // ✅ TypeScript knows err is Error
+                console.log(error.message);
+                return {
+                    code: 500,
+                    success: false,
+                    message: `Internal server error: ${error.message}`,
+                };
+            } else {
+                console.log('Unexpected error', error);
+                return {
+                    code: 500,
+                    success: false,
+                    message: `Internal server error: ${error}`,
+                };
+            }
         }
     }
 }
