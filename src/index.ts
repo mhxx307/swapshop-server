@@ -1,20 +1,20 @@
-require("dotenv").config();
-import "reflect-metadata";
-import express from "express";
-import cors from "cors";
-import { DataSource } from "typeorm";
-import { User } from "./entities/User";
-import { ApolloServer } from "@apollo/server";
-import { buildSchema } from "type-graphql";
-import { expressMiddleware } from "@apollo/server/express4";
-import { HelloResolver } from "./resolvers";
+require('dotenv').config();
+import 'reflect-metadata';
+import express from 'express';
+import cors from 'cors';
+import { DataSource } from 'typeorm';
+import { User } from './entities/User';
+import { ApolloServer } from '@apollo/server';
+import { buildSchema } from 'type-graphql';
+import { expressMiddleware } from '@apollo/server/express4';
+import { HelloResolver, UserResolver } from './resolvers';
 
 const main = async () => {
     const app = express();
 
     const PostgresDataSource = new DataSource({
-        type: "postgres",
-        host: "localhost",
+        type: 'postgres',
+        host: 'localhost',
         port: 5432,
         username: process.env.USERNAME_DB,
         password: process.env.PASSWORD_DB,
@@ -26,22 +26,22 @@ const main = async () => {
 
     PostgresDataSource.initialize()
         .then(() => {
-            console.log("Data Source has been initialized!");
+            console.log('Data Source has been initialized!');
         })
         .catch((err) => {
-            console.error("Error during Data Source initialization", err);
+            console.error('Error during Data Source initialization', err);
         });
 
     const server = new ApolloServer({
         schema: await buildSchema({
-            resolvers: [HelloResolver],
+            resolvers: [HelloResolver, UserResolver],
             validate: false,
         }),
     });
     await server.start();
 
     app.use(
-        "/graphql",
+        '/graphql',
         cors(),
         express.json(),
         expressMiddleware(server, {
