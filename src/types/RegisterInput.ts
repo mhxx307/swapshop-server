@@ -13,4 +13,10 @@ export default class RegisterInput {
 
     @Field()
     address: string;
+
+    @Field()
+    phoneNumber: string;
+
+    @Field({ nullable: true })
+    avatar: string;
 }

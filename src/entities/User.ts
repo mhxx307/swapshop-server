@@ -26,13 +26,17 @@ export default class User extends BaseEntity {
     @Column()
     email!: string;
 
-    // @Field({ nullable: true })
-    // @Column({nullable: true})
-    // address?: string;
-
     @Field()
     @Column()
     address!: string;
+
+    @Field()
+    @Column()
+    phoneNumber!: string;
+
+    @Field({ nullable: true })
+    @Column({ nullable: true })
+    avatar?: string;
 
     @Field()
     @CreateDateColumn()
