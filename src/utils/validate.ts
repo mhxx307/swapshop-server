@@ -4,8 +4,8 @@ import {
     passwordRegex,
     phoneNumberRegex,
     userRegex,
-} from '../constants/regex';
-import { RegisterInput } from '../types/input';
+} from '@/constants/regex';
+import { RegisterInput } from '@/types/input';
 
 export const validateRegisterInput = (registerInput: RegisterInput) => {
     const { email, username, password, fullName, phoneNumber } = registerInput;
