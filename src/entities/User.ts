@@ -9,21 +9,21 @@ import {
 } from 'typeorm';
 
 @ObjectType()
-@Entity()
+@Entity('users')
 export default class User extends BaseEntity {
     @Field((_type) => ID)
     @PrimaryGeneratedColumn()
     id!: number;
 
     @Field()
-    @Column()
+    @Column({ unique: true })
     username!: string;
 
     @Column()
     password!: string;
 
     @Field()
-    @Column()
+    @Column({ unique: true })
     email!: string;
 
     @Field()
@@ -31,18 +31,30 @@ export default class User extends BaseEntity {
     address!: string;
 
     @Field()
-    @Column()
+    @Column({ unique: true })
     phoneNumber!: string;
+
+    @Field()
+    @Column()
+    fullName!: string;
+
+    @Field({ nullable: true })
+    @Column({ nullable: true })
+    birthday?: Date;
 
     @Field({ nullable: true })
     @Column({ nullable: true })
     avatar?: string;
 
+    @Field({ nullable: true })
+    @Column({ nullable: true })
+    isOnline?: boolean;
+
     @Field()
     @CreateDateColumn()
-    createAt?: Date;
+    createdDate: Date;
 
     @Field()
     @UpdateDateColumn()
-    updateAt?: Date;
+    updatedDate: Date;
 }

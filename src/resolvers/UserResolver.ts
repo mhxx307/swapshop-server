@@ -2,12 +2,13 @@ import { Arg, Mutation, Resolver } from 'type-graphql';
 import * as argon2 from 'argon2';
 
 import { User } from '../entities';
-import { RegisterInput, UserMutationResponse } from '../types';
+import { LoginInput, RegisterInput } from '../types/input';
+import { UserMutationResponse } from '../types/response';
 import { validateRegisterInput } from '../utils/validate';
 
 @Resolver()
 export default class UserResolver {
-    @Mutation(() => UserMutationResponse, { nullable: true })
+    @Mutation(() => UserMutationResponse)
     async register(
         @Arg('registerInput') registerInput: RegisterInput
     ): Promise<UserMutationResponse> {
@@ -22,8 +23,16 @@ export default class UserResolver {
             };
 
         try {
-            const { username, password, email, address, phoneNumber, avatar } =
-                registerInput;
+            const {
+                username,
+                password,
+                email,
+                address,
+                phoneNumber,
+                avatar,
+                birthday,
+                fullName,
+            } = registerInput;
 
             const existUser = await User.findOne({
                 where: [{ username }, { email }, { phoneNumber }],
@@ -36,7 +45,7 @@ export default class UserResolver {
                     message: 'Duplicated username, email or phone number',
                     errors: [
                         {
-                            field: `Duplicated ${
+                            field: `${
                                 (existUser.username === username &&
                                     'username') ||
                                 (existUser.email === email && 'email') ||
@@ -63,7 +72,9 @@ export default class UserResolver {
                 email,
                 address,
                 phoneNumber,
+                fullName,
                 avatar,
+                birthday,
             });
 
             return {
@@ -90,4 +101,11 @@ export default class UserResolver {
             }
         }
     }
+
+    // @Mutation(() => UserMutationResponse)
+    // async login(
+    //     @Arg('loginInput') loginInput: LoginInput
+    // ): Promise<UserMutationResponse> {
+    //     const existUser = await User.findOne();
+    // }
 }

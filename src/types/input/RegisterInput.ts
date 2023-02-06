@@ -17,6 +17,12 @@ export default class RegisterInput {
     @Field()
     phoneNumber: string;
 
+    @Field()
+    fullName: string;
+
     @Field({ nullable: true })
-    avatar: string;
+    avatar?: string;
+
+    @Field({ nullable: true })
+    birthday?: Date;
 }
