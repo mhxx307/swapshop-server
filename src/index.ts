@@ -7,8 +7,8 @@ import { expressMiddleware } from '@apollo/server/express4';
 import { ApolloServer } from '@apollo/server';
 import { buildSchema } from 'type-graphql';
 
-import { User } from './entities';
-import { UserResolver, HelloResolver } from './resolvers';
+import { Message, User } from './entities';
+import { UserResolver, HelloResolver, MessageResolver } from './resolvers';
 
 const main = async () => {
     const app = express();
@@ -22,7 +22,7 @@ const main = async () => {
         database: process.env.DATABASE_NAME,
         logging: true,
         synchronize: true,
-        entities: [User],
+        entities: [User, Message],
     });
 
     PostgresDataSource.initialize()
@@ -35,7 +35,7 @@ const main = async () => {
 
     const server = new ApolloServer({
         schema: await buildSchema({
-            resolvers: [UserResolver, HelloResolver],
+            resolvers: [UserResolver, HelloResolver, MessageResolver],
             validate: false,
         }),
     });
