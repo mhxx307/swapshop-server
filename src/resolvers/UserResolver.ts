@@ -15,6 +15,8 @@ export default class UserResolver {
         const validateRegisterInputErrors =
             validateRegisterInput(registerInput);
 
+        console.log(validateRegisterInputErrors);
+
         if (validateRegisterInputErrors !== null)
             return {
                 code: 400,
@@ -34,11 +36,11 @@ export default class UserResolver {
                 fullName,
             } = registerInput;
 
-            const existUser = await User.findOne({
+            const existingUser = await User.findOne({
                 where: [{ username }, { email }, { phoneNumber }],
             });
 
-            if (existUser)
+            if (existingUser)
                 return {
                     code: 400,
                     success: false,
@@ -46,18 +48,18 @@ export default class UserResolver {
                     errors: [
                         {
                             field: `${
-                                (existUser.username === username &&
+                                (existingUser.username === username &&
                                     'username') ||
-                                (existUser.email === email && 'email') ||
-                                (existUser.phoneNumber === phoneNumber &&
+                                (existingUser.email === email && 'email') ||
+                                (existingUser.phoneNumber === phoneNumber &&
                                     'phone number')
                             }`,
                             message: `${
-                                (existUser.username === username &&
+                                (existingUser.username === username &&
                                     `Username ${username}`) ||
-                                (existUser.email === email &&
+                                (existingUser.email === email &&
                                     `Email ${email}`) ||
-                                (existUser.phoneNumber === phoneNumber &&
+                                (existingUser.phoneNumber === phoneNumber &&
                                     `Phone number ${phoneNumber}`)
                             } already taken`,
                         },
@@ -102,10 +104,86 @@ export default class UserResolver {
         }
     }
 
-    // @Mutation(() => UserMutationResponse)
-    // async login(
-    //     @Arg('loginInput') loginInput: LoginInput
-    // ): Promise<UserMutationResponse> {
-    //     const existUser = await User.findOne();
-    // }
+    @Mutation(() => UserMutationResponse)
+    async login(
+        @Arg('loginInput') loginInput: LoginInput
+    ): Promise<UserMutationResponse> {
+        try {
+            const { usernameOrEmail, password } = loginInput;
+            const emailRegex =
+                /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/g;
+            let existingUser;
+
+            if (emailRegex.test(usernameOrEmail)) {
+                existingUser = await User.findOne({
+                    where: {
+                        email: usernameOrEmail,
+                    },
+                });
+            } else {
+                existingUser = await User.findOne({
+                    where: {
+                        username: usernameOrEmail,
+                    },
+                });
+            }
+
+            if (!existingUser) {
+                return {
+                    code: 400,
+                    success: false,
+                    message:
+                        'Account does not exist, username or email maybe wrong',
+                    errors: [
+                        {
+                            field: 'usernameOrEmail',
+                            message: 'Account does not exist',
+                        },
+                    ],
+                };
+            }
+
+            const isValidPassword = await argon2.verify(
+                existingUser.password,
+                password
+            );
+
+            if (!isValidPassword) {
+                return {
+                    code: 400,
+                    success: false,
+                    message: 'Wrong password',
+                    errors: [
+                        {
+                            field: 'password',
+                            message: 'Wrong password',
+                        },
+                    ],
+                };
+            }
+
+            return {
+                code: 200,
+                success: true,
+                message: 'Logged in successfully',
+                user: existingUser,
+            };
+        } catch (error) {
+            if (error instanceof Error) {
+                console.log(error.message);
+                return {
+                    code: 500,
+                    success: false,
+                    message: `Internal server error: ${error.message}`,
+                };
+            } else {
+                console.log('Unexpected error', error);
+                return {
+                    code: 500,
+                    success: false,
+                    message: `Internal server error: ${error}`,
+                };
+            }
+        }
+    }
 }
