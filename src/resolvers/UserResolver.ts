@@ -1,10 +1,10 @@
 import { Arg, Mutation, Resolver } from 'type-graphql';
 import * as argon2 from 'argon2';
 
-import { User } from '@/entities';
-import { LoginInput, RegisterInput } from '@/types/input';
-import { UserMutationResponse } from '@/types/response';
-import { validateRegisterInput } from '@/utils/validate';
+import { User } from '../entities';
+import { LoginInput, RegisterInput } from '../types/input';
+import { UserMutationResponse } from '../types/response';
+import { validateRegisterInput } from '../validations';
 
 @Resolver()
 export default class UserResolver {

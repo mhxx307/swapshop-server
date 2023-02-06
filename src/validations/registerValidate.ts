@@ -4,10 +4,10 @@ import {
     passwordRegex,
     phoneNumberRegex,
     userRegex,
-} from '@/constants/regex';
-import { RegisterInput } from '@/types/input';
+} from '../constants/regex';
+import { RegisterInput } from '../types/input';
 
-export const validateRegisterInput = (registerInput: RegisterInput) => {
+const validateRegisterInput = (registerInput: RegisterInput) => {
     const { email, username, password, fullName, phoneNumber } = registerInput;
 
     const isEmailValidate = emailRegex.test(email);
@@ -88,3 +88,5 @@ export const validateRegisterInput = (registerInput: RegisterInput) => {
 
     return null;
 };
+
+export default validateRegisterInput;
