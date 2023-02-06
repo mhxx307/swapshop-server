@@ -8,7 +8,7 @@ import { ApolloServer } from '@apollo/server';
 import { buildSchema } from 'type-graphql';
 
 import { User } from './entities';
-import { HelloResolver, UserResolver } from './resolvers';
+import { UserResolver } from './resolvers';
 
 const main = async () => {
     const app = express();
@@ -35,7 +35,7 @@ const main = async () => {
 
     const server = new ApolloServer({
         schema: await buildSchema({
-            resolvers: [HelloResolver, UserResolver],
+            resolvers: [UserResolver],
             validate: false,
         }),
     });
