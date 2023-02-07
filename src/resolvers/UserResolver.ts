@@ -1,10 +1,12 @@
-import { Arg, Mutation, Resolver } from 'type-graphql';
+import { Arg, Ctx, Mutation, Resolver } from 'type-graphql';
 import * as argon2 from 'argon2';
 
 import { User } from '../entities';
 import { LoginInput, RegisterInput } from '../types/input';
 import { UserMutationResponse } from '../types/response';
 import { validateRegisterInput } from '../validations';
+import { IMyContext } from '../types';
+import { COOKIE_NAME } from '../constants';
 
 @Resolver()
 export default class UserResolver {
@@ -106,7 +108,8 @@ export default class UserResolver {
 
     @Mutation(() => UserMutationResponse)
     async login(
-        @Arg('loginInput') loginInput: LoginInput
+        @Arg('loginInput') loginInput: LoginInput,
+        @Ctx() { req }: IMyContext
     ): Promise<UserMutationResponse> {
         try {
             const { usernameOrEmail, password } = loginInput;
@@ -162,6 +165,8 @@ export default class UserResolver {
                 };
             }
 
+            req.session.userId = existingUser.id;
+
             return {
                 code: 200,
                 success: true,
@@ -185,5 +190,19 @@ export default class UserResolver {
                 };
             }
         }
+    }
+
+    @Mutation(() => Boolean)
+    async logout(@Ctx() { req, res }: IMyContext) {
+        return new Promise((resolve) => {
+            res.clearCookie(COOKIE_NAME);
+            req.session.destroy((error) => {
+                if (error) {
+                    console.log('DESTROY SESSION ERROR', error);
+                    resolve(false);
+                }
+                resolve(true);
+            });
+        });
     }
 }
