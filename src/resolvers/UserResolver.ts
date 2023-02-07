@@ -85,7 +85,7 @@ export default class UserResolver {
                 code: 200,
                 success: true,
                 message: 'User registration successfully',
-                user: await User.save(newUser),
+                user: await newUser.save(),
             };
         } catch (error) {
             if (error instanceof Error) {
