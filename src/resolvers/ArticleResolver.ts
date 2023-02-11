@@ -1,22 +1,27 @@
-import { Arg, Ctx, ID, Mutation, Query, Resolver } from 'type-graphql';
+import {
+    Arg,
+    Ctx,
+    ID,
+    Mutation,
+    Query,
+    Resolver,
+    UseMiddleware,
+} from 'type-graphql';
 import { ArticleMutationResponse } from '../types/response';
 import { CreateArticleInput, UpdateArticleInput } from '../types/input';
 import { Article, User } from '../entities';
 import { IMyContext } from '../types';
-import { GraphQLError } from 'graphql';
+import { checkAuth, checkArticleBelongTo } from '../middleware';
 
 @Resolver()
 export default class ArticleResolver {
     @Mutation(() => ArticleMutationResponse)
+    @UseMiddleware(checkAuth)
     async createArticle(
         @Arg('createArticleInput') input: CreateArticleInput,
         @Ctx() { req }: IMyContext
     ): Promise<ArticleMutationResponse> {
         const userId = req.session.userId;
-        if (!userId)
-            throw new GraphQLError(
-                'Not authenticated to perform GraphQL operations'
-            );
 
         try {
             const { title, description } = input;
@@ -101,16 +106,10 @@ export default class ArticleResolver {
     }
 
     @Mutation(() => ArticleMutationResponse)
+    @UseMiddleware(checkAuth, checkArticleBelongTo)
     async updateArticle(
-        @Arg('updateArticleInput') updateArticleInput: UpdateArticleInput,
-        @Ctx() { req }: IMyContext
+        @Arg('updateArticleInput') updateArticleInput: UpdateArticleInput
     ): Promise<ArticleMutationResponse> {
-        const userId = req.session.userId;
-        if (!userId)
-            throw new GraphQLError(
-                'Not authenticated to perform GraphQL operations'
-            );
-
         try {
             const { id, description, title } = updateArticleInput;
 
@@ -126,16 +125,6 @@ export default class ArticleResolver {
                     success: false,
                     message: 'Article not found',
                 };
-
-            // cần phải load dữ liệu từ FieldResolver
-            // if (existingArticle.user.id !== userId) {
-            //     return {
-            //         code: 403,
-            //         success: false,
-            //         message:
-            //             'You do not have the permission to update this article',
-            //     };
-            // }
 
             existingArticle.description = description;
             existingArticle.title = title;
@@ -166,39 +155,11 @@ export default class ArticleResolver {
     }
 
     @Mutation(() => ArticleMutationResponse)
+    @UseMiddleware(checkAuth, checkArticleBelongTo)
     async deleteArticle(
-        @Arg('id', () => ID) id: string,
-        @Ctx() { req }: IMyContext
+        @Arg('id', () => ID) id: string
     ): Promise<ArticleMutationResponse> {
-        const userId = req.session.userId;
-        if (!userId)
-            throw new GraphQLError(
-                'Not authenticated to perform GraphQL operations'
-            );
-
         try {
-            const existingArticle = await Article.findOne({
-                where: {
-                    id,
-                },
-            });
-
-            if (!existingArticle)
-                return {
-                    code: 400,
-                    success: false,
-                    message: 'Article not found',
-                };
-
-            // if (existingArticle.user.id !== userId) {
-            //     return {
-            //         code: 401,
-            //         success: false,
-            //         message:
-            //             'You do not have the permission to update this article',
-            //     };
-            // }
-
             await Article.delete(id);
 
             return {

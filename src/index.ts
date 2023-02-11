@@ -26,6 +26,13 @@ import {
 const main = async () => {
     const app = express();
 
+    app.use(
+        cors({
+            origin: 'http://localhost:3000',
+            credentials: true,
+        })
+    );
+
     // postgres connection
     const PostgresDataSource = new DataSource({
         type: 'postgres',
@@ -116,7 +123,10 @@ const main = async () => {
 
     app.use(
         '/graphql',
-        cors(),
+        cors({
+            origin: 'http://localhost:3000',
+            credentials: true,
+        }),
         express.json(),
         expressMiddleware(server, {
             context: async ({ req, res }) => ({ req, res }),

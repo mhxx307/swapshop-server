@@ -1,4 +1,11 @@
-import { Arg, Ctx, Mutation, Resolver } from 'type-graphql';
+import {
+    Arg,
+    Ctx,
+    Mutation,
+    Query,
+    Resolver,
+    UseMiddleware,
+} from 'type-graphql';
 import * as argon2 from 'argon2';
 
 import { User } from '../entities';
@@ -7,10 +14,22 @@ import { UserMutationResponse } from '../types/response';
 import { validateRegisterInput } from '../validations';
 import { IMyContext } from '../types';
 import { COOKIE_NAME } from '../constants';
+import { checkAuth, checkIsLogin } from '../middleware';
 
 @Resolver()
 export default class UserResolver {
+    @Query(() => User, { nullable: true })
+    async userInfo(
+        @Ctx() { req }: IMyContext
+    ): Promise<User | undefined | null> {
+        const userId = req.session.userId;
+        if (!userId) return null;
+        const user = await User.findOne({ where: { id: userId } });
+        return user;
+    }
+
     @Mutation(() => UserMutationResponse)
+    @UseMiddleware(checkIsLogin)
     async register(
         @Arg('registerInput') registerInput: RegisterInput
     ): Promise<UserMutationResponse> {
@@ -107,6 +126,7 @@ export default class UserResolver {
     }
 
     @Mutation(() => UserMutationResponse)
+    @UseMiddleware(checkIsLogin)
     async login(
         @Arg('loginInput') loginInput: LoginInput,
         @Ctx() { req }: IMyContext
@@ -193,6 +213,7 @@ export default class UserResolver {
     }
 
     @Mutation(() => Boolean)
+    @UseMiddleware(checkAuth)
     async logout(@Ctx() { req, res }: IMyContext) {
         return new Promise((resolve) => {
             res.clearCookie(COOKIE_NAME);
