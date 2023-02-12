@@ -5,7 +5,7 @@ const validateRegisterInput = (registerInput: RegisterInput) => {
 
     const emailRegex =
         /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/g;
-    const userRegex = /^(?=[a-zA-Z0-9._]{8,20}$)(?!.*[_.]{2})[^_.].*[^_.]$/g;
+    const userRegex = /^(?=[a-zA-Z0-9._]{2,20}$)(?!.*[_.]{2})[^_.].*[^_.]$/g;
     const passwordRegex =
         /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/gm;
     const fullNameRegex =
@@ -41,7 +41,7 @@ const validateRegisterInput = (registerInput: RegisterInput) => {
                 {
                     field: 'username',
                     message:
-                        'username is 8-20 characters long, not special characters, no _ or . at the beginning, no __ or _. or ._ or .. inside, no _ or . at the end. Check: https://stackoverflow.com/questions/12018245/regular-expression-to-validate-username',
+                        'username is 2-20 characters long, not special characters, no _ or . at the beginning, no __ or _. or ._ or .. inside, no _ or . at the end. Check: https://stackoverflow.com/questions/12018245/regular-expression-to-validate-username',
                 },
             ],
         };

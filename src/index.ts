@@ -14,8 +14,8 @@ import mongoose from 'mongoose';
 import session from 'express-session';
 var MongoDBStore = require('connect-mongodb-session')(session);
 
-import { User } from './entities';
-import { UserResolver, HelloResolver } from './resolvers';
+import { Article, User } from './entities';
+import { UserResolver, HelloResolver, ArticleResolver } from './resolvers';
 import {
     COOKIE_MAX_AGE,
     COLLECTION_SESSION_NAME,
@@ -25,6 +25,13 @@ import {
 
 const main = async () => {
     const app = express();
+
+    app.use(
+        cors({
+            origin: 'http://localhost:3000',
+            credentials: true,
+        })
+    );
 
     // postgres connection
     const PostgresDataSource = new DataSource({
@@ -36,7 +43,7 @@ const main = async () => {
         database: process.env.DATABASE_NAME,
         logging: true,
         synchronize: true,
-        entities: [User],
+        entities: [User, Article],
     });
 
     PostgresDataSource.initialize()
@@ -99,7 +106,7 @@ const main = async () => {
     // setting up apollo server
     const server = new ApolloServer({
         schema: await buildSchema({
-            resolvers: [UserResolver, HelloResolver],
+            resolvers: [UserResolver, HelloResolver, ArticleResolver],
             validate: false,
         }),
         plugins: [
@@ -116,7 +123,10 @@ const main = async () => {
 
     app.use(
         '/graphql',
-        cors(),
+        cors({
+            origin: 'http://localhost:3000',
+            credentials: true,
+        }),
         express.json(),
         expressMiddleware(server, {
             context: async ({ req, res }) => ({ req, res }),
