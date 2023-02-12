@@ -1,16 +1,16 @@
 import { Field, ObjectType } from 'type-graphql';
 import IMutationResponse, { FieldError } from './MutationResponse';
-import { User } from '../../entities';
+import { Message } from '../../entities';
 
 @ObjectType({ implements: IMutationResponse })
-export default class UserMutationResponse implements IMutationResponse {
+export default class MessageMutationResponse implements IMutationResponse {
     code: number;
     success: boolean;
     message?: string;
 
     @Field({ nullable: true })
-    user?: User;
+    createdMessage?: Message;
 
-    @Field(() => [FieldError], { nullable: true })
+    @Field((type) => [FieldError], { nullable: true })
     errors?: FieldError[];
 }
