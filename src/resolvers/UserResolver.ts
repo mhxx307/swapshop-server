@@ -1,14 +1,35 @@
-import { Arg, Mutation, Resolver } from 'type-graphql';
+import {
+    Arg,
+    Ctx,
+    Mutation,
+    Query,
+    Resolver,
+    UseMiddleware,
+} from 'type-graphql';
 import * as argon2 from 'argon2';
 
 import { User } from '../entities';
 import { LoginInput, RegisterInput } from '../types/input';
 import { UserMutationResponse } from '../types/response';
 import { validateRegisterInput } from '../validations';
+import { IMyContext } from '../types';
+import { COOKIE_NAME } from '../constants';
+import { checkAuth, checkIsLogin } from '../middleware';
 
 @Resolver()
 export default class UserResolver {
+    @Query(() => User, { nullable: true })
+    async userInfo(
+        @Ctx() { req }: IMyContext
+    ): Promise<User | undefined | null> {
+        const userId = req.session.userId;
+        if (!userId) return null;
+        const user = await User.findOne({ where: { id: userId } });
+        return user;
+    }
+
     @Mutation(() => UserMutationResponse)
+    @UseMiddleware(checkIsLogin)
     async register(
         @Arg('registerInput') registerInput: RegisterInput
     ): Promise<UserMutationResponse> {
@@ -83,7 +104,7 @@ export default class UserResolver {
                 code: 200,
                 success: true,
                 message: 'User registration successfully',
-                user: await User.save(newUser),
+                user: await newUser.save(),
             };
         } catch (error) {
             if (error instanceof Error) {
@@ -105,8 +126,10 @@ export default class UserResolver {
     }
 
     @Mutation(() => UserMutationResponse)
+    @UseMiddleware(checkIsLogin)
     async login(
-        @Arg('loginInput') loginInput: LoginInput
+        @Arg('loginInput') loginInput: LoginInput,
+        @Ctx() { req }: IMyContext
     ): Promise<UserMutationResponse> {
         try {
             const { usernameOrEmail, password } = loginInput;
@@ -162,6 +185,8 @@ export default class UserResolver {
                 };
             }
 
+            req.session.userId = existingUser.id;
+
             return {
                 code: 200,
                 success: true,
@@ -185,5 +210,20 @@ export default class UserResolver {
                 };
             }
         }
+    }
+
+    @Mutation(() => Boolean)
+    @UseMiddleware(checkAuth)
+    async logout(@Ctx() { req, res }: IMyContext) {
+        return new Promise((resolve) => {
+            res.clearCookie(COOKIE_NAME);
+            req.session.destroy((error) => {
+                if (error) {
+                    console.log('DESTROY SESSION ERROR', error);
+                    resolve(false);
+                }
+                resolve(true);
+            });
+        });
     }
 }

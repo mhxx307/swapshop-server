@@ -6,14 +6,16 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
     BaseEntity,
+    OneToMany,
 } from 'typeorm';
+import Article from './Article';
 
 @ObjectType()
 @Entity('users')
 export default class User extends BaseEntity {
     @Field((_type) => ID)
-    @PrimaryGeneratedColumn()
-    id!: number;
+    @PrimaryGeneratedColumn('uuid')
+    id!: string;
 
     @Field()
     @Column({ unique: true })
@@ -49,6 +51,9 @@ export default class User extends BaseEntity {
     @Field({ nullable: true })
     @Column({ nullable: true })
     isOnline?: boolean;
+
+    @OneToMany(() => Article, (article) => article.user)
+    articles!: Article[];
 
     @Field()
     @CreateDateColumn()
