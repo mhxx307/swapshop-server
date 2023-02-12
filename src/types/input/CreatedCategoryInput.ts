@@ -1,10 +1,10 @@
 import { Field, InputType } from 'type-graphql';
 
 @InputType()
-export default class CreatedReview {
+export default class CreatedCategoryInput {
     @Field()
-    content: string;
+    name: string;
 
     @Field()
-    point?: string;
+    description?: string;
 }

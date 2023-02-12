@@ -1,5 +1,5 @@
 import { Arg, Mutation, Resolver } from 'type-graphql';
-import { Message, User } from '../entities';
+import { Message } from '../entities';
 
 import MessageInput from '../types/input/MessageInput';
 import MessageMutationResponse from '../types/response/MessageMutationResponse';

@@ -1,10 +1,10 @@
 import { Field, InputType } from 'type-graphql';
 
 @InputType()
-export default class CreatedCategory {
+export default class CreatedCommentInput {
     @Field()
-    name: string;
+    content: string;
 
     @Field()
-    description?: string;
+    status?: string;
 }

@@ -1,7 +1,7 @@
 export { default as LoginInput } from './LoginInput';
 export { default as RegisterInput } from './RegisterInput';
-export { default as CreatedCategory } from './CreatedCategory';
-export { default as CreatedComment } from './CreatedComment';
-export { default as CreatedReview } from './CreatedReview';
+export { default as CreatedCategoryInput } from './CreatedCategoryInput';
+export { default as CreatedCommentInput } from './CreatedCommentInput';
+export { default as CreatedReviewInput } from './CreatedReviewInput';
 export { default as CreateArticleInput } from './CreateArticleInput';
 export { default as UpdateArticleInput } from './UpdateArticleInput';
