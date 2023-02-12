@@ -5,3 +5,5 @@ export { default as CreatedCommentInput } from './CreatedCommentInput';
 export { default as CreatedReviewInput } from './CreatedReviewInput';
 export { default as CreateArticleInput } from './CreateArticleInput';
 export { default as UpdateArticleInput } from './UpdateArticleInput';
+export { default as ForgotPasswordInput } from './ForgotPasswordInput';
+export { default as ChangePasswordInput } from './ChangePasswordInput';
