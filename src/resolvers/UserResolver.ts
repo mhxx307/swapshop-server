@@ -334,7 +334,7 @@ export default class UserResolver {
 
             await resetPasswordTokenRecord.deleteOne();
 
-            req.session.userId = user.id;
+            // req.session.userId = user.id;
 
             return {
                 code: 200,
