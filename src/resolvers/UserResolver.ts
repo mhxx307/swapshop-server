@@ -12,12 +12,17 @@ import { v4 as uuidv4 } from 'uuid';
 import { User } from '../entities';
 import {
     ChangePasswordInput,
+    ChangePasswordLoggedInput,
     ForgotPasswordInput,
     LoginInput,
     RegisterInput,
 } from '../types/input';
 import { UserMutationResponse } from '../types/response';
-import { changePasswordValidate, validateRegisterInput } from '../validations';
+import {
+    validateChangePasswordLoggedInput,
+    validateChangePasswordInput,
+    validateRegisterInput,
+} from '../validations';
 import { IMyContext } from '../types';
 import { COOKIE_NAME } from '../constants';
 import { checkAuth, checkIsLogin } from '../middleware';
@@ -241,7 +246,7 @@ export default class UserResolver {
         });
     }
 
-    @Mutation((_return) => UserMutationResponse)
+    @Mutation(() => UserMutationResponse)
     async forgotPassword(
         @Arg('forgotPasswordInput') { email }: ForgotPasswordInput
     ): Promise<UserMutationResponse> {
@@ -298,7 +303,7 @@ export default class UserResolver {
         }
     }
 
-    @Mutation((_return) => UserMutationResponse)
+    @Mutation(() => UserMutationResponse)
     async changePassword(
         @Arg('token') token: string,
         @Arg('userId') userId: string,
@@ -306,7 +311,7 @@ export default class UserResolver {
         @Ctx() { req }: IMyContext
     ): Promise<UserMutationResponse> {
         const validateChangePasswordError =
-            changePasswordValidate(changePasswordInput);
+            validateChangePasswordInput(changePasswordInput);
         if (validateChangePasswordError) {
             return {
                 code: 400,
@@ -397,4 +402,106 @@ export default class UserResolver {
             }
         }
     }
+
+    @Mutation(() => UserMutationResponse)
+    @UseMiddleware(checkAuth)
+    async changePasswordLogged(
+        @Arg('changePasswordLoggedInput')
+        changePasswordLoggedInput: ChangePasswordLoggedInput,
+        @Ctx() { req }: IMyContext
+    ): Promise<UserMutationResponse> {
+        const validateChangePasswordError = validateChangePasswordLoggedInput(
+            changePasswordLoggedInput
+        );
+        if (validateChangePasswordError) {
+            return {
+                code: 400,
+                success: false,
+            };
+        }
+
+        try {
+            const userId = req.session.userId;
+            const { oldPassword, newPassword } = changePasswordLoggedInput;
+
+            const user = await User.findOne({ where: { id: userId } });
+            const password = user?.password;
+
+            if (password) {
+                const matchOldPass = await argon2.verify(password, oldPassword);
+
+                const oldMatchNewPass = await argon2.verify(
+                    password,
+                    newPassword
+                );
+
+                if (!matchOldPass) {
+                    return {
+                        code: 400,
+                        success: false,
+                        message: 'wrong old password',
+                        errors: [
+                            {
+                                field: 'password',
+                                message: 'wrong old password',
+                            },
+                        ],
+                    };
+                }
+
+                if (oldMatchNewPass) {
+                    return {
+                        code: 400,
+                        success: false,
+                        message: 'Same old password',
+                        errors: [
+                            {
+                                field: 'newPassword',
+                                message: 'Same old password',
+                            },
+                        ],
+                    };
+                }
+            }
+
+            if (!user) {
+                return {
+                    code: 400,
+                    success: false,
+                    message: 'User no longer exists',
+                    errors: [
+                        { field: 'user', message: 'User no longer exists' },
+                    ],
+                };
+            }
+
+            const updatedPassword = await argon2.hash(newPassword);
+            await User.update({ id: userId }, { password: updatedPassword });
+
+            return {
+                code: 200,
+                success: true,
+                message: 'User password reset successfully',
+                user,
+            };
+        } catch (error) {
+            if (error instanceof Error) {
+                console.log(error.message);
+                return {
+                    code: 500,
+                    success: false,
+                    message: `Internal server error: ${error.message}`,
+                };
+            } else {
+                console.log('Unexpected error', error);
+                return {
+                    code: 500,
+                    success: false,
+                    message: `Internal server error: ${error}`,
+                };
+            }
+        }
+    }
+
+    // delete user
 }

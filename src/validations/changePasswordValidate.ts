@@ -1,6 +1,8 @@
 import { ChangePasswordInput } from '../types/input';
 
-const validateRegisterInput = (changePasswordInput: ChangePasswordInput) => {
+const validateChangePasswordInput = (
+    changePasswordInput: ChangePasswordInput
+) => {
     const { newPassword } = changePasswordInput;
 
     const passwordRegex =
@@ -25,4 +27,4 @@ const validateRegisterInput = (changePasswordInput: ChangePasswordInput) => {
     return null;
 };
 
-export default validateRegisterInput;
+export default validateChangePasswordInput;

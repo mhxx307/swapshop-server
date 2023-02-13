@@ -24,5 +24,5 @@ export default class RegisterInput {
     avatar?: string;
 
     @Field({ nullable: true })
-    birthday?: Date;
+    birthday?: string;
 }

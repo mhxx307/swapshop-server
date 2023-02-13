@@ -55,7 +55,7 @@ const main = async () => {
         });
 
     // Session/Cookie store
-    const mongoUrl = process.env.MONGO_CONNECTION_URL_DEV_PROD || '';
+    const mongoUrl = process.env.MONGO_CONNECTION_URL_DEV_PROD!;
     mongoose
         .connect(mongoUrl)
         .then(() => {
@@ -87,7 +87,7 @@ const main = async () => {
     app.use(
         session({
             name: COOKIE_NAME,
-            secret: process.env.SESSION_SECRET_DEV_PROD || 'this is secret key',
+            secret: process.env.SESSION_SECRET_DEV_PROD!,
             cookie: {
                 maxAge: COOKIE_MAX_AGE,
                 httpOnly: true,
