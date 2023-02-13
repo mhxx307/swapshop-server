@@ -11,7 +11,7 @@ const sendEmail = async (to: string, html: string) => {
         secure: false, // true for 465, false for other ports
         auth: {
             user: 'secondchancemarketvn@gmail.com', // generated ethereal user
-            pass: 'oiwnlzuitfrtukut', // generated ethereal password
+            pass: process.env.EMAIL_APP_PASSWORD, // generated ethereal password
         },
         tls: {
             rejectUnauthorized: false, // avoid NodeJs self signed certificate error
