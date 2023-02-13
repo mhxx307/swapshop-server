@@ -7,14 +7,27 @@ import {
     UseMiddleware,
 } from 'type-graphql';
 import * as argon2 from 'argon2';
+import { v4 as uuidv4 } from 'uuid';
 
 import { User } from '../entities';
-import { LoginInput, RegisterInput } from '../types/input';
+import {
+    ChangePasswordInput,
+    ChangePasswordLoggedInput,
+    ForgotPasswordInput,
+    LoginInput,
+    RegisterInput,
+} from '../types/input';
 import { UserMutationResponse } from '../types/response';
-import { validateRegisterInput } from '../validations';
+import {
+    validateChangePasswordLoggedInput,
+    validateChangePasswordInput,
+    validateRegisterInput,
+} from '../validations';
 import { IMyContext } from '../types';
 import { COOKIE_NAME } from '../constants';
 import { checkAuth, checkIsLogin } from '../middleware';
+import { TokenModel } from '../models';
+import { sendEmail } from '../utils';
 
 @Resolver()
 export default class UserResolver {
@@ -31,7 +44,8 @@ export default class UserResolver {
     @Mutation(() => UserMutationResponse)
     @UseMiddleware(checkIsLogin)
     async register(
-        @Arg('registerInput') registerInput: RegisterInput
+        @Arg('registerInput') registerInput: RegisterInput,
+        @Ctx() { req }: IMyContext
     ): Promise<UserMutationResponse> {
         const validateRegisterInputErrors =
             validateRegisterInput(registerInput);
@@ -100,11 +114,16 @@ export default class UserResolver {
                 birthday,
             });
 
+            const savedUser = await newUser.save();
+
+            req.session.userId = savedUser.id;
+            console.log(savedUser.id);
+
             return {
                 code: 200,
                 success: true,
                 message: 'User registration successfully',
-                user: await newUser.save(),
+                user: savedUser,
             };
         } catch (error) {
             if (error instanceof Error) {
@@ -226,4 +245,263 @@ export default class UserResolver {
             });
         });
     }
+
+    @Mutation(() => UserMutationResponse)
+    async forgotPassword(
+        @Arg('forgotPasswordInput') { email }: ForgotPasswordInput
+    ): Promise<UserMutationResponse> {
+        try {
+            const user = await User.findOne({
+                where: { email: email },
+            });
+
+            if (!user)
+                return {
+                    code: 401,
+                    success: false,
+                    message: 'User do not exist',
+                };
+
+            await TokenModel.findOneAndDelete({ userId: `${user.id}` });
+
+            const resetToken = uuidv4();
+            const hashedResetToken = await argon2.hash(resetToken);
+
+            // save token to db
+            await new TokenModel({
+                userId: `${user.id}`,
+                token: hashedResetToken,
+            }).save();
+
+            // send reset password link to user via email
+            await sendEmail(
+                email,
+                `<a href="http://localhost:3000/change-password?token=${resetToken}&userId=${user.id}">Click here to reset your password</a> - Do not send this link to other`
+            );
+
+            return {
+                code: 200,
+                success: true,
+                message: 'Email send successfully! Please check your inbox',
+            };
+        } catch (error) {
+            if (error instanceof Error) {
+                console.log(error.message);
+                return {
+                    code: 500,
+                    success: false,
+                    message: `Internal server error: ${error.message}`,
+                };
+            } else {
+                console.log('Unexpected error', error);
+                return {
+                    code: 500,
+                    success: false,
+                    message: `Internal server error: ${error}`,
+                };
+            }
+        }
+    }
+
+    @Mutation(() => UserMutationResponse)
+    async changePassword(
+        @Arg('token') token: string,
+        @Arg('userId') userId: string,
+        @Arg('changePasswordInput') changePasswordInput: ChangePasswordInput,
+        @Ctx() { req }: IMyContext
+    ): Promise<UserMutationResponse> {
+        const validateChangePasswordError =
+            validateChangePasswordInput(changePasswordInput);
+        if (validateChangePasswordError) {
+            return {
+                code: 400,
+                success: false,
+            };
+        }
+
+        try {
+            const { newPassword } = changePasswordInput;
+            const resetPasswordTokenRecord = await TokenModel.findOne({
+                userId,
+            });
+
+            if (!resetPasswordTokenRecord) {
+                return {
+                    code: 400,
+                    success: false,
+                    message: 'Invalid or expired password reset token',
+                    errors: [
+                        {
+                            field: 'token',
+                            message: 'Invalid or expired password reset token',
+                        },
+                    ],
+                };
+            }
+
+            const resetPasswordTokenValid = argon2.verify(
+                resetPasswordTokenRecord.token,
+                token
+            );
+
+            if (!resetPasswordTokenValid) {
+                return {
+                    code: 400,
+                    success: false,
+                    message: 'Invalid or expired password reset token',
+                    errors: [
+                        {
+                            field: 'token',
+                            message: 'Invalid or expired password reset token',
+                        },
+                    ],
+                };
+            }
+
+            const user = await User.findOne({ where: { id: userId } });
+
+            if (!user) {
+                return {
+                    code: 400,
+                    success: false,
+                    message: 'User no longer exists',
+                    errors: [
+                        { field: 'token', message: 'User no longer exists' },
+                    ],
+                };
+            }
+
+            const updatedPassword = await argon2.hash(newPassword);
+            await User.update({ id: userId }, { password: updatedPassword });
+
+            await resetPasswordTokenRecord.deleteOne();
+
+            req.session.userId = user.id;
+
+            return {
+                code: 200,
+                success: true,
+                message: 'User password reset successfully',
+                user,
+            };
+        } catch (error) {
+            if (error instanceof Error) {
+                console.log(error.message);
+                return {
+                    code: 500,
+                    success: false,
+                    message: `Internal server error: ${error.message}`,
+                };
+            } else {
+                console.log('Unexpected error', error);
+                return {
+                    code: 500,
+                    success: false,
+                    message: `Internal server error: ${error}`,
+                };
+            }
+        }
+    }
+
+    @Mutation(() => UserMutationResponse)
+    @UseMiddleware(checkAuth)
+    async changePasswordLogged(
+        @Arg('changePasswordLoggedInput')
+        changePasswordLoggedInput: ChangePasswordLoggedInput,
+        @Ctx() { req }: IMyContext
+    ): Promise<UserMutationResponse> {
+        const validateChangePasswordError = validateChangePasswordLoggedInput(
+            changePasswordLoggedInput
+        );
+        if (validateChangePasswordError) {
+            return {
+                code: 400,
+                success: false,
+            };
+        }
+
+        try {
+            const userId = req.session.userId;
+            const { oldPassword, newPassword } = changePasswordLoggedInput;
+
+            const user = await User.findOne({ where: { id: userId } });
+            const password = user?.password;
+
+            if (password) {
+                const matchOldPass = await argon2.verify(password, oldPassword);
+
+                const oldMatchNewPass = await argon2.verify(
+                    password,
+                    newPassword
+                );
+
+                if (!matchOldPass) {
+                    return {
+                        code: 400,
+                        success: false,
+                        message: 'wrong old password',
+                        errors: [
+                            {
+                                field: 'password',
+                                message: 'wrong old password',
+                            },
+                        ],
+                    };
+                }
+
+                if (oldMatchNewPass) {
+                    return {
+                        code: 400,
+                        success: false,
+                        message: 'Same old password',
+                        errors: [
+                            {
+                                field: 'newPassword',
+                                message: 'Same old password',
+                            },
+                        ],
+                    };
+                }
+            }
+
+            if (!user) {
+                return {
+                    code: 400,
+                    success: false,
+                    message: 'User no longer exists',
+                    errors: [
+                        { field: 'user', message: 'User no longer exists' },
+                    ],
+                };
+            }
+
+            const updatedPassword = await argon2.hash(newPassword);
+            await User.update({ id: userId }, { password: updatedPassword });
+
+            return {
+                code: 200,
+                success: true,
+                message: 'User password reset successfully',
+                user,
+            };
+        } catch (error) {
+            if (error instanceof Error) {
+                console.log(error.message);
+                return {
+                    code: 500,
+                    success: false,
+                    message: `Internal server error: ${error.message}`,
+                };
+            } else {
+                console.log('Unexpected error', error);
+                return {
+                    code: 500,
+                    success: false,
+                    message: `Internal server error: ${error}`,
+                };
+            }
+        }
+    }
+
+    // delete user
 }

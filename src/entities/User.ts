@@ -42,7 +42,7 @@ export default class User extends BaseEntity {
 
     @Field({ nullable: true })
     @Column({ nullable: true })
-    birthday?: Date;
+    birthday?: string;
 
     @Field({ nullable: true })
     @Column({ nullable: true })
