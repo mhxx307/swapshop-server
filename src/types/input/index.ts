@@ -1,10 +1,9 @@
 export { default as LoginInput } from './LoginInput';
 export { default as RegisterInput } from './RegisterInput';
-export { default as CreatedCategoryInput } from './CreatedCategoryInput';
-export { default as CreatedCommentInput } from './CreatedCommentInput';
-export { default as CreatedReviewInput } from './CreatedReviewInput';
 export { default as CreateArticleInput } from './CreateArticleInput';
 export { default as UpdateArticleInput } from './UpdateArticleInput';
 export { default as ForgotPasswordInput } from './ForgotPasswordInput';
 export { default as ChangePasswordInput } from './ChangePasswordInput';
 export { default as ChangePasswordLoggedInput } from './ChangePasswordLoggedInput';
+export { default as FindArticleInput } from './FindArticleInput';
+export { default as DeleteArticleInput } from './DeleteArticleInput';

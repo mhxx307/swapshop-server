@@ -27,7 +27,7 @@ import { IMyContext } from '../types';
 import { COOKIE_NAME } from '../constants';
 import { checkAuth, checkIsLogin } from '../middleware';
 import { TokenModel } from '../models';
-import { sendEmail } from '../utils';
+import showError, { sendEmail } from '../utils';
 
 @Resolver()
 export default class UserResolver {
@@ -126,21 +126,7 @@ export default class UserResolver {
                 user: savedUser,
             };
         } catch (error) {
-            if (error instanceof Error) {
-                console.log(error.message);
-                return {
-                    code: 500,
-                    success: false,
-                    message: `Internal server error: ${error.message}`,
-                };
-            } else {
-                console.log('Unexpected error', error);
-                return {
-                    code: 500,
-                    success: false,
-                    message: `Internal server error: ${error}`,
-                };
-            }
+            return showError(error);
         }
     }
 
@@ -213,21 +199,7 @@ export default class UserResolver {
                 user: existingUser,
             };
         } catch (error) {
-            if (error instanceof Error) {
-                console.log(error.message);
-                return {
-                    code: 500,
-                    success: false,
-                    message: `Internal server error: ${error.message}`,
-                };
-            } else {
-                console.log('Unexpected error', error);
-                return {
-                    code: 500,
-                    success: false,
-                    message: `Internal server error: ${error}`,
-                };
-            }
+            return showError(error);
         }
     }
 
@@ -285,21 +257,7 @@ export default class UserResolver {
                 message: 'Email send successfully! Please check your inbox',
             };
         } catch (error) {
-            if (error instanceof Error) {
-                console.log(error.message);
-                return {
-                    code: 500,
-                    success: false,
-                    message: `Internal server error: ${error.message}`,
-                };
-            } else {
-                console.log('Unexpected error', error);
-                return {
-                    code: 500,
-                    success: false,
-                    message: `Internal server error: ${error}`,
-                };
-            }
+            return showError(error);
         }
     }
 
@@ -385,21 +343,7 @@ export default class UserResolver {
                 user,
             };
         } catch (error) {
-            if (error instanceof Error) {
-                console.log(error.message);
-                return {
-                    code: 500,
-                    success: false,
-                    message: `Internal server error: ${error.message}`,
-                };
-            } else {
-                console.log('Unexpected error', error);
-                return {
-                    code: 500,
-                    success: false,
-                    message: `Internal server error: ${error}`,
-                };
-            }
+            return showError(error);
         }
     }
 
@@ -485,21 +429,7 @@ export default class UserResolver {
                 user,
             };
         } catch (error) {
-            if (error instanceof Error) {
-                console.log(error.message);
-                return {
-                    code: 500,
-                    success: false,
-                    message: `Internal server error: ${error.message}`,
-                };
-            } else {
-                console.log('Unexpected error', error);
-                return {
-                    code: 500,
-                    success: false,
-                    message: `Internal server error: ${error}`,
-                };
-            }
+            return showError(error);
         }
     }
 

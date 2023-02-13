@@ -8,10 +8,16 @@ import {
     UseMiddleware,
 } from 'type-graphql';
 import { ArticleMutationResponse } from '../types/response';
-import { CreateArticleInput, UpdateArticleInput } from '../types/input';
+import {
+    CreateArticleInput,
+    DeleteArticleInput,
+    FindArticleInput,
+    UpdateArticleInput,
+} from '../types/input';
 import { Article, User } from '../entities';
 import { IMyContext } from '../types';
 import { checkAuth, checkArticleBelongTo } from '../middleware';
+import showError from '../utils';
 
 @Resolver()
 export default class ArticleResolver {
@@ -52,26 +58,12 @@ export default class ArticleResolver {
                 message: 'User was wrong',
             };
         } catch (error) {
-            if (error instanceof Error) {
-                console.log(error.message);
-                return {
-                    code: 500,
-                    success: false,
-                    message: `Internal server error: ${error.message}`,
-                };
-            } else {
-                console.log('Unexpected error', error);
-                return {
-                    code: 500,
-                    success: false,
-                    message: `Internal server error: ${error}`,
-                };
-            }
+            return showError(error);
         }
     }
 
     @Query(() => [Article], { nullable: true })
-    async findArticles(): Promise<Article[] | undefined> {
+    async articles(): Promise<Article[] | null> {
         try {
             return await Article.find();
         } catch (error) {
@@ -80,14 +72,15 @@ export default class ArticleResolver {
             } else {
                 console.log('Unexpected error', error);
             }
-            return undefined;
+            return null;
         }
     }
 
     @Query(() => Article, { nullable: true })
-    async findArticleById(
-        @Arg('id', () => ID) id: string
+    async article(
+        @Arg('findArticleInput') findArticleInput: FindArticleInput
     ): Promise<Article | null> {
+        const { id } = findArticleInput;
         try {
             const article = await Article.findOne({
                 where: {
@@ -136,30 +129,17 @@ export default class ArticleResolver {
                 article: await existingArticle.save(),
             };
         } catch (error) {
-            if (error instanceof Error) {
-                console.log(error.message);
-                return {
-                    code: 500,
-                    success: false,
-                    message: `Internal server error: ${error.message}`,
-                };
-            } else {
-                console.log('Unexpected error', error);
-                return {
-                    code: 500,
-                    success: false,
-                    message: `Internal server error: ${error}`,
-                };
-            }
+            return showError(error);
         }
     }
 
     @Mutation(() => ArticleMutationResponse)
     @UseMiddleware(checkAuth, checkArticleBelongTo)
     async deleteArticle(
-        @Arg('id', () => ID) id: string
+        @Arg('deleteArticleInput') deleteArticleInput: DeleteArticleInput
     ): Promise<ArticleMutationResponse> {
         try {
+            const { id } = deleteArticleInput;
             await Article.delete(id);
 
             return {
@@ -168,21 +148,7 @@ export default class ArticleResolver {
                 message: 'Delete successfully',
             };
         } catch (error) {
-            if (error instanceof Error) {
-                console.log(error.message);
-                return {
-                    code: 500,
-                    success: false,
-                    message: `Internal server error: ${error.message}`,
-                };
-            } else {
-                console.log('Unexpected error', error);
-                return {
-                    code: 500,
-                    success: false,
-                    message: `Internal server error: ${error}`,
-                };
-            }
+            return showError(error);
         }
     }
 }
