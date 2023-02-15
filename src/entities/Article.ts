@@ -26,16 +26,23 @@ export default class Article extends BaseEntity {
     @Column()
     description!: string;
 
+    // thumbnail string
+    // images string[]
+    // price
+    // category
+
+    @Column()
+    userId!: string;
+
     @Field(() => User)
     @ManyToOne(() => User, (user) => user.articles)
-    @JoinColumn({ name: 'userId' })
-    user!: User;
+    user: User;
 
     @Field()
-    @CreateDateColumn()
+    @CreateDateColumn({ type: 'timestamptz' })
     createdDate: Date;
 
     @Field()
-    @UpdateDateColumn()
+    @UpdateDateColumn({ type: 'timestamptz' })
     updatedDate: Date;
 }

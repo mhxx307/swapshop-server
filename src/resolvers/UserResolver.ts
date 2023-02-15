@@ -1,9 +1,11 @@
 import {
     Arg,
     Ctx,
+    FieldResolver,
     Mutation,
     Query,
     Resolver,
+    Root,
     UseMiddleware,
 } from 'type-graphql';
 import * as argon2 from 'argon2';
@@ -29,8 +31,13 @@ import { checkAuth, checkIsLogin } from '../middleware';
 import { TokenModel } from '../models';
 import showError, { sendEmail } from '../utils';
 
-@Resolver()
+@Resolver(() => User)
 export default class UserResolver {
+    @FieldResolver((_return) => String)
+    email(@Root() user: User, @Ctx() { req }: IMyContext) {
+        return req.session.userId === user.id ? user.email : '';
+    }
+
     @Query(() => User, { nullable: true })
     async userInfo(
         @Ctx() { req }: IMyContext

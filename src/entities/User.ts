@@ -53,7 +53,7 @@ export default class User extends BaseEntity {
     isOnline?: boolean;
 
     @OneToMany(() => Article, (article) => article.user)
-    articles!: Article[];
+    articles: Article[];
 
     @Field()
     @CreateDateColumn()
