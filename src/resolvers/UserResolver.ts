@@ -29,7 +29,7 @@ import { IMyContext } from '../types';
 import { COOKIE_NAME } from '../constants';
 import { checkAuth, checkIsLogin } from '../middleware';
 import { TokenModel } from '../models';
-import showError, { sendEmail } from '../utils';
+import { sendEmail, showError } from '../utils';
 
 @Resolver(() => User)
 export default class UserResolver {
@@ -39,9 +39,7 @@ export default class UserResolver {
     }
 
     @Query(() => User, { nullable: true })
-    async userInfo(
-        @Ctx() { req }: IMyContext
-    ): Promise<User | undefined | null> {
+    async me(@Ctx() { req }: IMyContext): Promise<User | undefined | null> {
         const userId = req.session.userId;
         if (!userId) return null;
         const user = await User.findOne({ where: { id: userId } });

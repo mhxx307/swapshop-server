@@ -4,7 +4,6 @@ import {
     Column,
     CreateDateColumn,
     Entity,
-    JoinColumn,
     ManyToOne,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
@@ -30,6 +29,7 @@ export default class Article extends BaseEntity {
     // images string[]
     // price
     // category
+    // product name
 
     @Column()
     userId!: string;

@@ -21,7 +21,7 @@ import {
 import { Article, User } from '../entities';
 import { IMyContext, PaginatedArticles } from '../types';
 import { checkAuth } from '../middleware';
-import showError from '../utils';
+import { showError } from '../utils';
 import { FindManyOptions, LessThan } from 'typeorm';
 
 @Resolver(() => Article)
@@ -34,11 +34,11 @@ export default class ArticleResolver {
     @Mutation(() => ArticleMutationResponse)
     @UseMiddleware(checkAuth)
     async createArticle(
-        @Arg('createArticleInput') input: CreateArticleInput,
+        @Arg('createArticleInput') createArticleInput: CreateArticleInput,
         @Ctx() { req }: IMyContext
     ): Promise<ArticleMutationResponse> {
         try {
-            const { title, description } = input;
+            const { title, description } = createArticleInput;
 
             const newArticle = Article.create({
                 title,
@@ -57,89 +57,54 @@ export default class ArticleResolver {
         }
     }
 
-    // @Query(() => PaginatedArticles, { nullable: true })
-    // async articles(
-    //     @Arg('limit', () => Int) limit: number,
-    //     @Arg('cursor', { nullable: true }) cursor?: string
-    // ): Promise<PaginatedArticles | null> {
-    //     try {
-    //         const realLimit = Math.min(50, limit);
-
-    //         const findOptions:
-    //             | FindManyOptions<Article>
-    //             | { [key: string]: any } = {
-    //             order: {
-    //                 createdDate: 'DESC',
-    //             },
-    //             take: realLimit,
-    //             where: cursor ? { createdDate: LessThan(cursor) } : undefined,
-    //             // skip: cursor && realLimit,
-    //         };
-
-    //         let lastArticle: Article[] = [];
-
-    //         if (cursor) {
-    //             lastArticle = await Article.find({
-    //                 order: { createdDate: 'ASC' },
-    //                 take: 1,
-    //             });
-    //         }
-
-    //         const [articles, totalCount] = await Article.findAndCount(
-    //             findOptions
-    //         );
-
-    //         return {
-    //             totalCount: totalCount,
-    //             cursor: articles[articles.length - 1].createdDate,
-    //             hasMore: cursor
-    //                 ? articles[articles.length - 1].createdDate.toString() !==
-    //                   lastArticle[0].createdDate.toString()
-    //                 : articles.length !== totalCount,
-    //             paginatedArticles: articles.slice(0, realLimit),
-    //         };
-    //     } catch (error) {
-    //         if (error instanceof Error) {
-    //             console.log(error.message);
-    //         } else {
-    //             console.log('Unexpected error', error);
-    //         }
-    //         return null;
-    //     }
-    // }
-
     @Query(() => PaginatedArticles, { nullable: true })
     async articles(
-        @Arg('first', () => Int, { nullable: true })
-        first: number = 10,
-        @Arg('after', () => String, { nullable: true })
-        after?: string
-    ): Promise<PaginatedArticles> {
-        const [articles, totalCount] = await Article.createQueryBuilder(
-            'articles'
-        )
-            .orderBy('articles.createdDate', 'DESC')
-            .skip(after ? parseInt(Buffer.from(after, 'base64').toString()) : 0)
-            .take(first)
-            .getManyAndCount();
+        @Arg('limit', () => Int) limit: number,
+        @Arg('cursor', { nullable: true }) cursor?: string
+    ): Promise<PaginatedArticles | null> {
+        try {
+            const realLimit = Math.min(10, limit);
 
-        // const hasMore =
-        //     totalCount > (parseInt(after!, 10) || 0) + articles.length;
+            const findOptions:
+                | FindManyOptions<Article>
+                | { [key: string]: any } = {
+                order: {
+                    createdDate: 'DESC',
+                },
+                take: realLimit,
+            };
 
-        const hasMore = articles.length === first;
+            let lastArticle: Article[] = [];
 
-        const endCursor = Buffer.from(
-            `${parseInt(after!, 10) || 0 + articles.length}`
-        ).toString('base64');
+            if (cursor) {
+                findOptions.where = { createdDate: LessThan(cursor) };
+                lastArticle = await Article.find({
+                    order: { createdDate: 'ASC' },
+                    take: 1,
+                });
+            }
 
-        console.log(hasMore);
+            const [articles, totalCount] = await Article.findAndCount(
+                findOptions
+            );
 
-        return {
-            articles,
-            endCursor,
-            hasMore,
-            totalCount,
-        };
+            return {
+                totalCount: totalCount,
+                cursor: articles[articles.length - 1].createdDate,
+                hasMore: cursor
+                    ? articles[articles.length - 1].createdDate.toString() !==
+                      lastArticle[0].createdDate.toString()
+                    : articles.length !== totalCount,
+                paginatedArticles: articles,
+            };
+        } catch (error) {
+            if (error instanceof Error) {
+                console.log(error.message);
+            } else {
+                console.log('Unexpected error', error);
+            }
+            return null;
+        }
     }
 
     @Query(() => Article, { nullable: true })

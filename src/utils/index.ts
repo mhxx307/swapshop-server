@@ -1,6 +1,6 @@
 export { default as sendEmail } from './sendEmail';
 
-const showError = (error: any) => {
+export const showError = (error: any) => {
     if (error instanceof Error) {
         console.log(error.message);
         return {
@@ -17,5 +17,3 @@ const showError = (error: any) => {
         };
     }
 };
-
-export default showError;

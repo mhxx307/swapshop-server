@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { Session, SessionData } from 'express-session';
-import { Field, ObjectType } from 'type-graphql';
+import { Field, Int, ObjectType } from 'type-graphql';
 import { Article } from '../entities';
 
 export interface IMyContext {
@@ -15,12 +15,12 @@ export class PaginatedArticles {
     @Field()
     totalCount!: number;
 
-    @Field(() => String)
-    endCursor!: string;
+    @Field((_type) => Date)
+    cursor!: Date;
 
     @Field()
     hasMore!: boolean;
 
-    @Field(() => [Article])
-    articles!: Article[];
+    @Field((_type) => [Article])
+    paginatedArticles!: Article[];
 }
