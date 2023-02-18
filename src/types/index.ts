@@ -1,6 +1,7 @@
+import { buildDataLoaders } from '../utils/dataLoaders';
 import { Request, Response } from 'express';
 import { Session, SessionData } from 'express-session';
-import { Field, Int, ObjectType } from 'type-graphql';
+import { Field, ObjectType } from 'type-graphql';
 import { Article } from '../entities';
 
 export interface IMyContext {
@@ -8,6 +9,7 @@ export interface IMyContext {
         session: Session & Partial<SessionData> & { userId?: string };
     };
     res: Response;
+    dataLoaders: ReturnType<typeof buildDataLoaders>;
 }
 
 @ObjectType()

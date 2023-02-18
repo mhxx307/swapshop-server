@@ -1,5 +1,6 @@
 require('dotenv').config();
 import 'reflect-metadata';
+import { buildDataLoaders } from './utils/dataLoaders';
 import express from 'express';
 import cors from 'cors';
 import { DataSource } from 'typeorm';
@@ -22,6 +23,7 @@ import {
     __prod__,
     COOKIE_NAME,
 } from './constants';
+import { IMyContext } from './types';
 
 const main = async () => {
     const app = express();
@@ -129,7 +131,11 @@ const main = async () => {
         }),
         express.json(),
         expressMiddleware(server, {
-            context: async ({ req, res }) => ({ req, res }),
+            context: async ({ req, res }): Promise<IMyContext> => ({
+                req,
+                res,
+                dataLoaders: buildDataLoaders(),
+            }),
         })
     );
 

@@ -1,6 +1,5 @@
 import {
     Arg,
-    Args,
     Ctx,
     FieldResolver,
     Int,
@@ -27,8 +26,11 @@ import { FindManyOptions, LessThan } from 'typeorm';
 @Resolver(() => Article)
 export default class ArticleResolver {
     @FieldResolver(() => User)
-    async user(@Root() root: Article) {
-        return await User.findOne({ where: { id: root.userId } });
+    async user(
+        @Root() root: Article,
+        @Ctx() { dataLoaders: { userLoader } }: IMyContext
+    ) {
+        return await userLoader.load(root.userId);
     }
 
     @Mutation(() => ArticleMutationResponse)
