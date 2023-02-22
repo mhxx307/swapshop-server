@@ -65,7 +65,7 @@ export default class ArticleResolver {
         @Arg('cursor', { nullable: true }) cursor?: string
     ): Promise<PaginatedArticles | null> {
         try {
-            const realLimit = Math.min(10, limit);
+            const realLimit = Math.min(20, limit);
 
             const findOptions:
                 | FindManyOptions<Article>

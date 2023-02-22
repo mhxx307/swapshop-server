@@ -9,6 +9,7 @@ import {
     OneToMany,
 } from 'typeorm';
 import Article from './Article';
+import Comment from './Comment';
 
 @ObjectType()
 @Entity('users')
@@ -28,13 +29,13 @@ export default class User extends BaseEntity {
     @Column({ unique: true })
     email!: string;
 
-    @Field()
-    @Column()
-    address!: string;
+    @Field({ nullable: true })
+    @Column({ nullable: true })
+    address: string;
 
-    @Field()
-    @Column({ unique: true })
-    phoneNumber!: string;
+    @Field({ nullable: true })
+    @Column({ nullable: true, unique: true })
+    phoneNumber: string;
 
     @Field()
     @Column()
@@ -42,18 +43,21 @@ export default class User extends BaseEntity {
 
     @Field({ nullable: true })
     @Column({ nullable: true })
-    birthday?: string;
+    birthday: string;
 
     @Field({ nullable: true })
     @Column({ nullable: true })
-    avatar?: string;
+    avatar: string;
 
     @Field({ nullable: true })
     @Column({ nullable: true })
-    isOnline?: boolean;
+    isOnline: boolean;
 
     @OneToMany(() => Article, (article) => article.user)
     articles: Article[];
+
+    @OneToMany(() => Comment, (comment) => comment.user)
+    comments: Comment[];
 
     @Field()
     @CreateDateColumn()

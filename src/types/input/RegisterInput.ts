@@ -11,18 +11,18 @@ export default class RegisterInput {
     @Field()
     password: string;
 
-    @Field()
+    @Field({ nullable: true })
     address: string;
 
-    @Field()
+    @Field({ nullable: true })
     phoneNumber: string;
 
     @Field()
     fullName: string;
 
     @Field({ nullable: true })
-    avatar?: string;
+    avatar: string;
 
     @Field({ nullable: true })
-    birthday?: string;
+    birthday: string;
 }
