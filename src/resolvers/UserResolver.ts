@@ -1,9 +1,11 @@
 import {
     Arg,
     Ctx,
+    FieldResolver,
     Mutation,
     Query,
     Resolver,
+    Root,
     UseMiddleware,
 } from 'type-graphql';
 import * as argon2 from 'argon2';
@@ -27,14 +29,17 @@ import { IMyContext } from '../types';
 import { COOKIE_NAME } from '../constants';
 import { checkAuth, checkIsLogin } from '../middleware';
 import { TokenModel } from '../models';
-import showError, { sendEmail } from '../utils';
+import { sendEmail, showError } from '../utils';
 
-@Resolver()
+@Resolver(() => User)
 export default class UserResolver {
+    @FieldResolver((_return) => String)
+    email(@Root() user: User, @Ctx() { req }: IMyContext) {
+        return req.session.userId === user.id ? user.email : '';
+    }
+
     @Query(() => User, { nullable: true })
-    async userInfo(
-        @Ctx() { req }: IMyContext
-    ): Promise<User | undefined | null> {
+    async me(@Ctx() { req }: IMyContext): Promise<User | undefined | null> {
         const userId = req.session.userId;
         if (!userId) return null;
         const user = await User.findOne({ where: { id: userId } });
@@ -334,7 +339,7 @@ export default class UserResolver {
 
             await resetPasswordTokenRecord.deleteOne();
 
-            req.session.userId = user.id;
+            // req.session.userId = user.id;
 
             return {
                 code: 200,

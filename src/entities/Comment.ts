@@ -6,7 +6,10 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
     BaseEntity,
+    ManyToOne,
 } from 'typeorm';
+import User from './User';
+import Article from './Article';
 
 @ObjectType()
 @Entity('comments')
@@ -19,8 +22,23 @@ export default class Comment extends BaseEntity {
     @Column({ unique: true })
     content!: string;
 
+    @Field({ nullable: true })
+    @Column({ nullable: true })
+    status: string;
+
     @Column()
-    status?: string;
+    articleId!: string;
+
+    @Column()
+    userId!: string;
+
+    @Field(() => Article)
+    @ManyToOne(() => Article, (article) => article.comments)
+    article: Article;
+
+    @Field(() => User)
+    @ManyToOne(() => User, (user) => user.comments)
+    user: User;
 
     @Field()
     @CreateDateColumn()

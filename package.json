@@ -4,7 +4,7 @@
     "description": "swapshop server for second chance ",
     "main": "index.js",
     "scripts": {
-        "start": "tsc-watch --synchronousWatchDirectory --onSuccess \"yarn start:dist\"",
+        "start": "tsc-watch --synchronousWatchDirectory --onSuccess \"npm run start:dist\"",
         "start:dist": "node ./dist/index.js",
         "server": "nodemon dist/index.js",
         "watch": "tsc -w",
@@ -32,6 +32,7 @@
         "class-validator": "^0.14.0",
         "connect-mongodb-session": "^3.1.1",
         "cors": "^2.8.5",
+        "dataloader": "^2.2.2",
         "dotenv": "^16.0.3",
         "express": "^4.18.2",
         "express-session": "^1.17.3",

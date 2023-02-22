@@ -1,12 +1,15 @@
 import {
     Arg,
     Ctx,
-    ID,
+    FieldResolver,
+    Int,
     Mutation,
     Query,
     Resolver,
+    Root,
     UseMiddleware,
 } from 'type-graphql';
+
 import { ArticleMutationResponse } from '../types/response';
 import {
     CreateArticleInput,
@@ -15,57 +18,87 @@ import {
     UpdateArticleInput,
 } from '../types/input';
 import { Article, User } from '../entities';
-import { IMyContext } from '../types';
-import { checkAuth, checkArticleBelongTo } from '../middleware';
-import showError from '../utils';
+import { IMyContext, PaginatedArticles } from '../types';
+import { checkAuth } from '../middleware';
+import { showError } from '../utils';
+import { FindManyOptions, LessThan } from 'typeorm';
 
-@Resolver()
+@Resolver(() => Article)
 export default class ArticleResolver {
+    @FieldResolver(() => User)
+    async user(
+        @Root() root: Article,
+        @Ctx() { dataLoaders: { userLoader } }: IMyContext
+    ) {
+        return await userLoader.load(root.userId);
+    }
+
     @Mutation(() => ArticleMutationResponse)
     @UseMiddleware(checkAuth)
     async createArticle(
-        @Arg('createArticleInput') input: CreateArticleInput,
+        @Arg('createArticleInput') createArticleInput: CreateArticleInput,
         @Ctx() { req }: IMyContext
     ): Promise<ArticleMutationResponse> {
-        const userId = req.session.userId;
-
         try {
-            const { title, description } = input;
-            const user = await User.findOne({
-                where: {
-                    id: userId,
-                },
+            const { title, description } = createArticleInput;
+
+            const newArticle = Article.create({
+                title,
+                description,
+                userId: req.session.userId,
             });
 
-            if (user) {
-                const newArticle = Article.create({
-                    title,
-                    description,
-                    user,
-                });
-
-                return {
-                    code: 200,
-                    success: true,
-                    message: 'Article created successfully',
-                    article: await newArticle.save(),
-                };
-            }
-
             return {
-                code: 400,
-                success: false,
-                message: 'User was wrong',
+                code: 200,
+                success: true,
+                message: 'Article created successfully',
+                article: await newArticle.save(),
             };
         } catch (error) {
             return showError(error);
         }
     }
 
-    @Query(() => [Article], { nullable: true })
-    async articles(): Promise<Article[] | null> {
+    @Query(() => PaginatedArticles, { nullable: true })
+    async articles(
+        @Arg('limit', () => Int) limit: number,
+        @Arg('cursor', { nullable: true }) cursor?: string
+    ): Promise<PaginatedArticles | null> {
         try {
-            return await Article.find();
+            const realLimit = Math.min(20, limit);
+
+            const findOptions:
+                | FindManyOptions<Article>
+                | { [key: string]: any } = {
+                order: {
+                    createdDate: 'DESC',
+                },
+                take: realLimit,
+            };
+
+            let lastArticle: Article[] = [];
+
+            if (cursor) {
+                findOptions.where = { createdDate: LessThan(cursor) };
+                lastArticle = await Article.find({
+                    order: { createdDate: 'ASC' },
+                    take: 1,
+                });
+            }
+
+            const [articles, totalCount] = await Article.findAndCount(
+                findOptions
+            );
+
+            return {
+                totalCount: totalCount,
+                cursor: articles[articles.length - 1].createdDate,
+                hasMore: cursor
+                    ? articles[articles.length - 1].createdDate.toString() !==
+                      lastArticle[0].createdDate.toString()
+                    : articles.length !== totalCount,
+                paginatedArticles: articles,
+            };
         } catch (error) {
             if (error instanceof Error) {
                 console.log(error.message);
@@ -99,9 +132,10 @@ export default class ArticleResolver {
     }
 
     @Mutation(() => ArticleMutationResponse)
-    @UseMiddleware(checkAuth, checkArticleBelongTo)
+    @UseMiddleware(checkAuth)
     async updateArticle(
-        @Arg('updateArticleInput') updateArticleInput: UpdateArticleInput
+        @Arg('updateArticleInput') updateArticleInput: UpdateArticleInput,
+        @Ctx() { req }: IMyContext
     ): Promise<ArticleMutationResponse> {
         try {
             const { id, description, title } = updateArticleInput;
@@ -119,6 +153,14 @@ export default class ArticleResolver {
                     message: 'Article not found',
                 };
 
+            if (existingArticle.user.id !== req.session.userId) {
+                return {
+                    code: 401,
+                    success: false,
+                    message: 'Unauthorized',
+                };
+            }
+
             existingArticle.description = description;
             existingArticle.title = title;
 
@@ -134,12 +176,35 @@ export default class ArticleResolver {
     }
 
     @Mutation(() => ArticleMutationResponse)
-    @UseMiddleware(checkAuth, checkArticleBelongTo)
+    @UseMiddleware(checkAuth)
     async deleteArticle(
-        @Arg('deleteArticleInput') deleteArticleInput: DeleteArticleInput
+        @Arg('deleteArticleInput') deleteArticleInput: DeleteArticleInput,
+        @Ctx() { req }: IMyContext
     ): Promise<ArticleMutationResponse> {
         try {
             const { id } = deleteArticleInput;
+
+            const existingArticle = await Article.findOne({
+                where: {
+                    id,
+                },
+            });
+
+            if (!existingArticle)
+                return {
+                    code: 400,
+                    success: false,
+                    message: 'Article not found',
+                };
+
+            if (existingArticle.user.id !== req.session.userId) {
+                return {
+                    code: 401,
+                    success: false,
+                    message: 'Unauthorized',
+                };
+            }
+
             await Article.delete(id);
 
             return {
