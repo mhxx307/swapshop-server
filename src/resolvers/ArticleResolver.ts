@@ -12,9 +12,9 @@ import {
 
 import { ArticleMutationResponse } from '../types/response';
 import {
-    CreateArticleInput,
     DeleteArticleInput,
     FindArticleInput,
+    InsertArticleInput,
     UpdateArticleInput,
 } from '../types/input';
 import { Article, User } from '../entities';
@@ -35,8 +35,8 @@ export default class ArticleResolver {
 
     @Mutation(() => ArticleMutationResponse)
     @UseMiddleware(checkAuth)
-    async createArticle(
-        @Arg('createArticleInput') createArticleInput: CreateArticleInput,
+    async insertArticle(
+        @Arg('insertArticleInput') insertArticleInput: InsertArticleInput,
         @Ctx() { req }: IMyContext
     ): Promise<ArticleMutationResponse> {
         try {
@@ -47,7 +47,7 @@ export default class ArticleResolver {
                 price,
                 productName,
                 thumbnail,
-            } = createArticleInput;
+            } = insertArticleInput;
 
             const newArticle = Article.create({
                 title,
@@ -164,7 +164,7 @@ export default class ArticleResolver {
                     message: 'Article not found',
                 };
 
-            if (existingArticle.user.id !== req.session.userId) {
+            if (existingArticle.userId !== req.session.userId) {
                 return {
                     code: 401,
                     success: false,
@@ -208,7 +208,7 @@ export default class ArticleResolver {
                     message: 'Article not found',
                 };
 
-            if (existingArticle.user.id !== req.session.userId) {
+            if (existingArticle.userId !== req.session.userId) {
                 return {
                     code: 401,
                     success: false,

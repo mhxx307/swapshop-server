@@ -2,7 +2,7 @@ import { buildDataLoaders } from '../utils/dataLoaders';
 import { Request, Response } from 'express';
 import { Session, SessionData } from 'express-session';
 import { Field, ObjectType } from 'type-graphql';
-import { Article } from '../entities';
+import { Article, Comment } from '../entities';
 
 export interface IMyContext {
     req: Request & {
@@ -25,4 +25,19 @@ export class PaginatedArticles {
 
     @Field((_type) => [Article])
     paginatedArticles!: Article[];
+}
+
+@ObjectType()
+export class PaginatedComments {
+    @Field({ nullable: true })
+    totalCount!: number;
+
+    @Field((_type) => Date)
+    cursor!: Date;
+
+    @Field()
+    hasMore!: boolean;
+
+    @Field((_type) => [Comment])
+    paginatedComments!: Comment[];
 }

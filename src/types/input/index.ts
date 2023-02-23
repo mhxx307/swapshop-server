@@ -1,9 +1,11 @@
 export { default as LoginInput } from './LoginInput';
 export { default as RegisterInput } from './RegisterInput';
-export { default as CreateArticleInput } from './CreateArticleInput';
+export { default as InsertArticleInput } from './InsertArticleInput';
 export { default as UpdateArticleInput } from './UpdateArticleInput';
 export { default as ForgotPasswordInput } from './ForgotPasswordInput';
 export { default as ChangePasswordInput } from './ChangePasswordInput';
 export { default as ChangePasswordLoggedInput } from './ChangePasswordLoggedInput';
 export { default as FindArticleInput } from './FindArticleInput';
 export { default as DeleteArticleInput } from './DeleteArticleInput';
+export { default as InsertCommentInput } from './InsertCommentInput';
+export { default as UpdateCommentInput } from './UpdateCommentInput';

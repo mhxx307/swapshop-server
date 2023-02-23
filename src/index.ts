@@ -15,8 +15,8 @@ import mongoose from 'mongoose';
 import session from 'express-session';
 var MongoDBStore = require('connect-mongodb-session')(session);
 
-import { Article, User, Message, Comment } from './entities';
-import { UserResolver, ArticleResolver } from './resolvers';
+import { Article, User, Comment } from './entities';
+import { UserResolver, ArticleResolver, CommentResolver } from './resolvers';
 import {
     COOKIE_MAX_AGE,
     COLLECTION_SESSION_NAME,
@@ -108,7 +108,7 @@ const main = async () => {
     // setting up apollo server
     const server = new ApolloServer({
         schema: await buildSchema({
-            resolvers: [UserResolver, ArticleResolver],
+            resolvers: [UserResolver, ArticleResolver, CommentResolver],
             validate: false,
         }),
         plugins: [
