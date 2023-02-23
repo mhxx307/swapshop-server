@@ -40,11 +40,22 @@ export default class ArticleResolver {
         @Ctx() { req }: IMyContext
     ): Promise<ArticleMutationResponse> {
         try {
-            const { title, description } = createArticleInput;
+            const {
+                title,
+                description,
+                discount,
+                price,
+                productName,
+                thumbnail,
+            } = createArticleInput;
 
             const newArticle = Article.create({
                 title,
                 description,
+                discount,
+                price,
+                productName,
+                thumbnail,
                 userId: req.session.userId,
             });
 

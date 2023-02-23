@@ -31,15 +31,15 @@ export default class Article extends BaseEntity {
     @Column()
     thumbnail!: string;
 
-    @Field(() => [String], { nullable: true })
-    @Column({ nullable: true })
-    images: string[];
+    // @Field(() => [String], { nullable: true })
+    // @Column({ nullable: true })
+    // images: string[];
 
-    @Field()
+    @Field({ nullable: true })
     @Column({ nullable: true })
     price: number;
 
-    @Field()
+    @Field({ nullable: true })
     @Column({ nullable: true })
     discount: number;
 

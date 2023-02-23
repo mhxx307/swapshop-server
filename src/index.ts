@@ -15,7 +15,7 @@ import mongoose from 'mongoose';
 import session from 'express-session';
 var MongoDBStore = require('connect-mongodb-session')(session);
 
-import { Article, User, Message } from './entities';
+import { Article, User, Message, Comment } from './entities';
 import { UserResolver, ArticleResolver } from './resolvers';
 import {
     COOKIE_MAX_AGE,
@@ -45,7 +45,7 @@ const main = async () => {
         database: process.env.DATABASE_NAME,
         logging: true,
         synchronize: true,
-        entities: [User, Message, Article],
+        entities: [User, Comment, Article],
     });
 
     PostgresDataSource.initialize()

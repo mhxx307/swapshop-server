@@ -14,7 +14,7 @@ export interface IMyContext {
 
 @ObjectType()
 export class PaginatedArticles {
-    @Field()
+    @Field({ nullable: true })
     totalCount!: number;
 
     @Field((_type) => Date)
