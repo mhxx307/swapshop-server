@@ -29,7 +29,7 @@ export class PaginatedArticles {
 
 @ObjectType()
 export class PaginatedComments {
-    @Field({ nullable: true })
+    @Field()
     totalCount!: number;
 
     @Field((_type) => Date)
