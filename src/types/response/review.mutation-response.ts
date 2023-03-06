@@ -1,15 +1,15 @@
 import { Field, ObjectType } from 'type-graphql';
-import IMutationResponse, { FieldError } from './MutationResponse';
-import { Article } from '../../entities';
+import { Review } from '../../entities';
+import IMutationResponse, { FieldError } from './mutation-response';
 
 @ObjectType({ implements: IMutationResponse })
-export default class ArticleMutationResponse implements IMutationResponse {
+export default class CategoryMutationResponse implements IMutationResponse {
     code: number;
     success: boolean;
     message?: string;
 
     @Field({ nullable: true })
-    article?: Article;
+    review?: Review;
 
     @Field(() => [FieldError], { nullable: true })
     errors?: FieldError[];

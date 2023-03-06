@@ -13,8 +13,9 @@ import { FindManyOptions, LessThan } from 'typeorm';
 
 import { Article, Comment, User } from '../entities';
 import { checkAuth } from '../middleware';
-import { IMyContext, PaginatedComments } from '../types';
+import { IMyContext } from '../types';
 import { InsertCommentInput, UpdateCommentInput } from '../types/input';
+import { PaginatedComments } from '../types/paginated.type';
 import { CommentMutationResponse } from '../types/response';
 import { showError } from '../utils';
 
@@ -23,7 +24,7 @@ export default class CommentResolver {
     @FieldResolver(() => User)
     async user(
         @Root() root: Comment,
-        @Ctx() { dataLoaders: { userLoader } }: IMyContext
+        @Ctx() { dataLoaders: { userLoader } }: IMyContext,
     ) {
         return await userLoader.load(root.userId);
     }
@@ -31,7 +32,7 @@ export default class CommentResolver {
     @FieldResolver(() => Article)
     async article(
         @Root() root: Comment,
-        @Ctx() { dataLoaders: { articleLoader } }: IMyContext
+        @Ctx() { dataLoaders: { articleLoader } }: IMyContext,
     ) {
         return await articleLoader.load(root.articleId);
     }
@@ -40,7 +41,7 @@ export default class CommentResolver {
     @UseMiddleware(checkAuth)
     async insertComment(
         @Arg('insertCommentInput') insertCommentInput: InsertCommentInput,
-        @Ctx() { req }: IMyContext
+        @Ctx() { req }: IMyContext,
     ): Promise<CommentMutationResponse> {
         try {
             const { text, articleId } = insertCommentInput;
@@ -66,13 +67,13 @@ export default class CommentResolver {
     async commentListByArticleId(
         @Arg('articleId') articleId: string,
         @Arg('limit', () => Int) limit: number,
-        @Arg('cursor', { nullable: true }) cursor?: string
+        @Arg('cursor', { nullable: true }) cursor?: string,
     ): Promise<PaginatedComments | null> {
         const realLimit = Math.min(20, limit);
         try {
             const findOptions:
                 | FindManyOptions<Comment>
-                | { [key: string]: any } = {
+                | { [key: string]: unknown } = {
                 order: {
                     createdDate: 'DESC',
                 },
@@ -94,7 +95,7 @@ export default class CommentResolver {
             }
 
             const [comments, totalCount] = await Comment.findAndCount(
-                findOptions
+                findOptions,
             );
 
             return {
@@ -120,7 +121,7 @@ export default class CommentResolver {
     @UseMiddleware(checkAuth)
     async deleteComment(
         @Arg('id') id: string,
-        @Ctx() { req }: IMyContext
+        @Ctx() { req }: IMyContext,
     ): Promise<CommentMutationResponse> {
         try {
             console.log('id', id);
@@ -163,7 +164,7 @@ export default class CommentResolver {
     async updateComment(
         @Arg('updateCommentInput') updateCommentInput: UpdateCommentInput,
         @Arg('id') id: string,
-        @Ctx() { req }: IMyContext
+        @Ctx() { req }: IMyContext,
     ): Promise<CommentMutationResponse> {
         try {
             const { text, status } = updateCommentInput;

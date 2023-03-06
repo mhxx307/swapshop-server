@@ -50,7 +50,7 @@ export default class UserResolver {
     @UseMiddleware(checkIsLogin)
     async register(
         @Arg('registerInput') registerInput: RegisterInput,
-        @Ctx() { req }: IMyContext
+        @Ctx() { req }: IMyContext,
     ): Promise<UserMutationResponse> {
         const validateRegisterInputErrors =
             validateRegisterInput(registerInput);
@@ -139,7 +139,7 @@ export default class UserResolver {
     @UseMiddleware(checkIsLogin)
     async login(
         @Arg('loginInput') loginInput: LoginInput,
-        @Ctx() { req }: IMyContext
+        @Ctx() { req }: IMyContext,
     ): Promise<UserMutationResponse> {
         try {
             const { usernameOrEmail, password } = loginInput;
@@ -178,7 +178,7 @@ export default class UserResolver {
 
             const isValidPassword = await argon2.verify(
                 existingUser.password,
-                password
+                password,
             );
 
             if (!isValidPassword) {
@@ -225,7 +225,7 @@ export default class UserResolver {
 
     @Mutation(() => UserMutationResponse)
     async forgotPassword(
-        @Arg('forgotPasswordInput') { email }: ForgotPasswordInput
+        @Arg('forgotPasswordInput') { email }: ForgotPasswordInput,
     ): Promise<UserMutationResponse> {
         try {
             const user = await User.findOne({
@@ -253,7 +253,7 @@ export default class UserResolver {
             // send reset password link to user via email
             await sendEmail(
                 email,
-                `<a href="http://localhost:3000/change-password?token=${resetToken}&userId=${user.id}">Click here to reset your password</a> - Do not send this link to other`
+                `<a href="http://localhost:3000/change-password?token=${resetToken}&userId=${user.id}">Click here to reset your password</a> - Do not send this link to other`,
             );
 
             return {
@@ -271,7 +271,6 @@ export default class UserResolver {
         @Arg('token') token: string,
         @Arg('userId') userId: string,
         @Arg('changePasswordInput') changePasswordInput: ChangePasswordInput,
-        @Ctx() { req }: IMyContext
     ): Promise<UserMutationResponse> {
         const validateChangePasswordError =
             validateChangePasswordInput(changePasswordInput);
@@ -304,7 +303,7 @@ export default class UserResolver {
 
             const resetPasswordTokenValid = argon2.verify(
                 resetPasswordTokenRecord.token,
-                token
+                token,
             );
 
             if (!resetPasswordTokenValid) {
@@ -357,10 +356,10 @@ export default class UserResolver {
     async changePasswordLogged(
         @Arg('changePasswordLoggedInput')
         changePasswordLoggedInput: ChangePasswordLoggedInput,
-        @Ctx() { req }: IMyContext
+        @Ctx() { req }: IMyContext,
     ): Promise<UserMutationResponse> {
         const validateChangePasswordError = validateChangePasswordLoggedInput(
-            changePasswordLoggedInput
+            changePasswordLoggedInput,
         );
         if (validateChangePasswordError) {
             return {
@@ -381,7 +380,7 @@ export default class UserResolver {
 
                 const oldMatchNewPass = await argon2.verify(
                     password,
-                    newPassword
+                    newPassword,
                 );
 
                 if (!matchOldPass) {

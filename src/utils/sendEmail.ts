@@ -5,7 +5,7 @@ const sendEmail = async (to: string, html: string) => {
     // Generate test SMTP service account from ethereal.email
 
     // create reusable transporter object using the default SMTP transport
-    let transporter = nodemailer.createTransport({
+    const transporter = nodemailer.createTransport({
         host: 'smtp.gmail.com',
         port: 587,
         secure: false, // true for 465, false for other ports
@@ -19,7 +19,7 @@ const sendEmail = async (to: string, html: string) => {
     });
 
     // send mail with defined transport object
-    let info = await transporter.sendMail({
+    const info = await transporter.sendMail({
         from: '"Second Chance 👻" <secondchancemarketvn@gmail.com>', // sender address
         to, // list of receivers
         subject: 'Change Password', // Subject line

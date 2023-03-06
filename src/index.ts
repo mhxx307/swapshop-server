@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 require('dotenv').config();
 import 'reflect-metadata';
 import { buildDataLoaders } from './utils/dataLoaders';
@@ -13,7 +14,7 @@ import {
 import { buildSchema } from 'type-graphql';
 import mongoose from 'mongoose';
 import session from 'express-session';
-var MongoDBStore = require('connect-mongodb-session')(session);
+const MongoDBStore = require('connect-mongodb-session')(session);
 
 import { Article, User, Comment } from './entities';
 import { UserResolver, ArticleResolver, CommentResolver } from './resolvers';
@@ -32,7 +33,7 @@ const main = async () => {
         cors({
             origin: 'http://localhost:3000',
             credentials: true,
-        })
+        }),
     );
 
     // postgres connection
@@ -57,7 +58,7 @@ const main = async () => {
         });
 
     // Session/Cookie store
-    const mongoUrl = process.env.MONGO_CONNECTION_URL_DEV_PROD!;
+    const mongoUrl = process.env.MONGO_CONNECTION_URL_DEV_PROD as string;
     mongoose
         .connect(mongoUrl)
         .then(() => {
@@ -67,7 +68,7 @@ const main = async () => {
             console.log(err);
         });
 
-    var store = new MongoDBStore(
+    const store = new MongoDBStore(
         {
             uri: mongoUrl,
             collection: COLLECTION_SESSION_NAME,
@@ -78,7 +79,7 @@ const main = async () => {
             } else {
                 console.log('store created');
             }
-        }
+        },
     );
 
     // Catch errors
@@ -89,7 +90,7 @@ const main = async () => {
     app.use(
         session({
             name: COOKIE_NAME,
-            secret: process.env.SESSION_SECRET_DEV_PROD!,
+            secret: process.env.SESSION_SECRET_DEV_PROD as string,
             cookie: {
                 maxAge: COOKIE_MAX_AGE,
                 httpOnly: true,
@@ -102,7 +103,7 @@ const main = async () => {
             // * https://www.npmjs.com/package/express-session#saveuninitialized
             resave: false,
             saveUninitialized: false, // do not save empty sessions, right from the start
-        })
+        }),
     );
 
     // setting up apollo server
@@ -136,7 +137,7 @@ const main = async () => {
                 res,
                 dataLoaders: buildDataLoaders(),
             }),
-        })
+        }),
     );
 
     // run server
