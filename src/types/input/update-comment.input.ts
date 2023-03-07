@@ -3,8 +3,8 @@ import { Field, InputType } from 'type-graphql';
 @InputType()
 export default class UpdateCommentInput {
     @Field()
-    text: string;
+    id: string;
 
     @Field()
-    status: string;
+    text: string;
 }

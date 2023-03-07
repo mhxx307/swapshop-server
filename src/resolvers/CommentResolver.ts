@@ -163,11 +163,10 @@ export default class CommentResolver {
     @UseMiddleware(checkAuth)
     async updateComment(
         @Arg('updateCommentInput') updateCommentInput: UpdateCommentInput,
-        @Arg('id') id: string,
         @Ctx() { req }: IMyContext,
     ): Promise<CommentMutationResponse> {
         try {
-            const { text, status } = updateCommentInput;
+            const { id, text } = updateCommentInput;
 
             const existingComment = await Comment.findOne({
                 where: {
@@ -191,7 +190,7 @@ export default class CommentResolver {
             }
 
             existingComment.text = text;
-            existingComment.status = status;
+            existingComment.status = "Updated";
 
             return {
                 code: 200,
