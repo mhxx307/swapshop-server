@@ -1,5 +1,5 @@
 import { Field, ObjectType } from 'type-graphql';
-import IMutationResponse, { FieldError } from './MutationResponse';
+import IMutationResponse, { FieldError } from './mutation-response';
 import { Comment } from '../../entities';
 
 @ObjectType({ implements: IMutationResponse })
@@ -11,6 +11,6 @@ export default class CommentMutationResponse implements IMutationResponse {
     @Field({ nullable: true })
     comment?: Comment;
 
-    @Field((type) => [FieldError], { nullable: true })
+    @Field(() => [FieldError], { nullable: true })
     errors?: FieldError[];
 }

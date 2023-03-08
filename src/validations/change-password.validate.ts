@@ -1,7 +1,7 @@
 import { ChangePasswordInput } from '../types/input';
 
 const validateChangePasswordInput = (
-    changePasswordInput: ChangePasswordInput
+    changePasswordInput: ChangePasswordInput,
 ) => {
     const { newPassword } = changePasswordInput;
 

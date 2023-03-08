@@ -1,10 +1,10 @@
 import { Field, InputType } from 'type-graphql';
 
 @InputType()
-export default class CreateArticleInput {
+export default class InsertCommentInput {
     @Field()
-    title: string;
+    text: string;
 
     @Field()
-    description: string;
+    articleId: string;
 }

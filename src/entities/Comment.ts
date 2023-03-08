@@ -19,8 +19,8 @@ export default class Comment extends BaseEntity {
     id!: string;
 
     @Field()
-    @Column({ unique: true })
-    content!: string;
+    @Column()
+    text!: string;
 
     @Field({ nullable: true })
     @Column({ nullable: true })
@@ -41,10 +41,10 @@ export default class Comment extends BaseEntity {
     user: User;
 
     @Field()
-    @CreateDateColumn()
+    @CreateDateColumn({ type: 'timestamptz' })
     createdDate: Date;
 
     @Field()
-    @UpdateDateColumn()
+    @UpdateDateColumn({ type: 'timestamptz' })
     updatedDate: Date;
 }

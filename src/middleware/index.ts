@@ -4,11 +4,11 @@ import { GraphQLError } from 'graphql';
 
 export const checkAuth: MiddlewareFn<IMyContext> = async (
     { context: { req } },
-    next
+    next,
 ) => {
     if (!req.session.userId)
         throw new GraphQLError(
-            'Not authenticated to perform GraphQL operations'
+            'Not authenticated to perform GraphQL operations',
         );
 
     return next();
@@ -16,7 +16,7 @@ export const checkAuth: MiddlewareFn<IMyContext> = async (
 
 export const checkIsLogin: MiddlewareFn<IMyContext> = async (
     { context: { req } },
-    next
+    next,
 ) => {
     if (req.session.userId) throw new GraphQLError('Already login!');
 

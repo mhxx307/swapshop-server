@@ -1,5 +1,5 @@
 import { Field, ObjectType } from 'type-graphql';
-import IMutationResponse, { FieldError } from './MutationResponse';
+import IMutationResponse, { FieldError } from './mutation-response';
 import { User } from '../../entities';
 
 @ObjectType({ implements: IMutationResponse })

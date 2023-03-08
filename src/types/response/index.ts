@@ -1,7 +1,6 @@
-export { default as MutationResponse } from './MutationResponse';
-export { default as UserMutationResponse } from './UserMutationResponse';
-export { default as CategoryMutationResponse } from './CategoryMutationResponse';
-export { default as CommentMutationResponse } from './CommentMutationResponse';
-export { default as ReviewMutationResponse } from './ReviewMutationResponse';
-export { default as ArticleMutationResponse } from './ArticleMutationResponse';
-
+export { default as MutationResponse } from './mutation-response';
+export { default as UserMutationResponse } from './user.mutation-response';
+export { default as CategoryMutationResponse } from './category.mutation-response';
+export { default as CommentMutationResponse } from './comment.mutation-response';
+export { default as ReviewMutationResponse } from './review.mutation-response';
+export { default as ArticleMutationResponse } from './article.mutation-response';

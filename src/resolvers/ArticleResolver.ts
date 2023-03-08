@@ -9,42 +9,54 @@ import {
     Root,
     UseMiddleware,
 } from 'type-graphql';
+import { FindManyOptions, LessThan } from 'typeorm';
 
 import { ArticleMutationResponse } from '../types/response';
 import {
-    CreateArticleInput,
     DeleteArticleInput,
     FindArticleInput,
+    InsertArticleInput,
     UpdateArticleInput,
 } from '../types/input';
 import { Article, User } from '../entities';
-import { IMyContext, PaginatedArticles } from '../types';
+import { IMyContext } from '../types';
 import { checkAuth } from '../middleware';
 import { showError } from '../utils';
-import { FindManyOptions, LessThan } from 'typeorm';
+import { PaginatedArticles } from '../types/paginated.type';
 
 @Resolver(() => Article)
 export default class ArticleResolver {
     @FieldResolver(() => User)
     async user(
         @Root() root: Article,
-        @Ctx() { dataLoaders: { userLoader } }: IMyContext
+        @Ctx() { dataLoaders: { userLoader } }: IMyContext,
     ) {
         return await userLoader.load(root.userId);
     }
 
     @Mutation(() => ArticleMutationResponse)
     @UseMiddleware(checkAuth)
-    async createArticle(
-        @Arg('createArticleInput') createArticleInput: CreateArticleInput,
-        @Ctx() { req }: IMyContext
+    async insertArticle(
+        @Arg('insertArticleInput') insertArticleInput: InsertArticleInput,
+        @Ctx() { req }: IMyContext,
     ): Promise<ArticleMutationResponse> {
         try {
-            const { title, description } = createArticleInput;
+            const {
+                title,
+                description,
+                discount,
+                price,
+                productName,
+                thumbnail,
+            } = insertArticleInput;
 
             const newArticle = Article.create({
                 title,
                 description,
+                discount,
+                price,
+                productName,
+                thumbnail,
                 userId: req.session.userId,
             });
 
@@ -62,14 +74,14 @@ export default class ArticleResolver {
     @Query(() => PaginatedArticles, { nullable: true })
     async articles(
         @Arg('limit', () => Int) limit: number,
-        @Arg('cursor', { nullable: true }) cursor?: string
+        @Arg('cursor', { nullable: true }) cursor?: string,
     ): Promise<PaginatedArticles | null> {
         try {
             const realLimit = Math.min(20, limit);
 
             const findOptions:
                 | FindManyOptions<Article>
-                | { [key: string]: any } = {
+                | { [key: string]: unknown } = {
                 order: {
                     createdDate: 'DESC',
                 },
@@ -87,11 +99,11 @@ export default class ArticleResolver {
             }
 
             const [articles, totalCount] = await Article.findAndCount(
-                findOptions
+                findOptions,
             );
 
             return {
-                totalCount: totalCount,
+                totalCount,
                 cursor: articles[articles.length - 1].createdDate,
                 hasMore: cursor
                     ? articles[articles.length - 1].createdDate.toString() !==
@@ -111,7 +123,7 @@ export default class ArticleResolver {
 
     @Query(() => Article, { nullable: true })
     async article(
-        @Arg('findArticleInput') findArticleInput: FindArticleInput
+        @Arg('findArticleInput') findArticleInput: FindArticleInput,
     ): Promise<Article | null> {
         const { id } = findArticleInput;
         try {
@@ -135,7 +147,7 @@ export default class ArticleResolver {
     @UseMiddleware(checkAuth)
     async updateArticle(
         @Arg('updateArticleInput') updateArticleInput: UpdateArticleInput,
-        @Ctx() { req }: IMyContext
+        @Ctx() { req }: IMyContext,
     ): Promise<ArticleMutationResponse> {
         try {
             const { id, description, title } = updateArticleInput;
@@ -153,7 +165,7 @@ export default class ArticleResolver {
                     message: 'Article not found',
                 };
 
-            if (existingArticle.user.id !== req.session.userId) {
+            if (existingArticle.userId !== req.session.userId) {
                 return {
                     code: 401,
                     success: false,
@@ -179,7 +191,7 @@ export default class ArticleResolver {
     @UseMiddleware(checkAuth)
     async deleteArticle(
         @Arg('deleteArticleInput') deleteArticleInput: DeleteArticleInput,
-        @Ctx() { req }: IMyContext
+        @Ctx() { req }: IMyContext,
     ): Promise<ArticleMutationResponse> {
         try {
             const { id } = deleteArticleInput;
@@ -197,7 +209,7 @@ export default class ArticleResolver {
                     message: 'Article not found',
                 };
 
-            if (existingArticle.user.id !== req.session.userId) {
+            if (existingArticle.userId !== req.session.userId) {
                 return {
                     code: 401,
                     success: false,
