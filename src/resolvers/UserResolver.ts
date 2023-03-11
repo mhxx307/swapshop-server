@@ -18,6 +18,7 @@ import {
     ForgotPasswordInput,
     LoginInput,
     RegisterInput,
+    UpdateProfileInput,
 } from '../types/input';
 import { UserMutationResponse } from '../types/response';
 import {
@@ -129,6 +130,71 @@ export default class UserResolver {
                 success: true,
                 message: 'User registration successfully',
                 user: savedUser,
+            };
+        } catch (error) {
+            return showError(error);
+        }
+    }
+
+    @Mutation(() => UserMutationResponse)
+    @UseMiddleware(checkAuth)
+    async updateProfile(
+        @Arg('updateProfileInput') updateProfileInput: UpdateProfileInput,
+        @Ctx() { req }: IMyContext,
+    ): Promise<UserMutationResponse> {
+        try {
+            const { username, address, phoneNumber, birthday, fullName } =
+                updateProfileInput;
+
+            const existingUser = await User.findOne({
+                where: {
+                    id: req.session.userId,
+                },
+            });
+
+            const duplicateUser = await User.findOne({
+                where: {
+                    username: username,
+                },
+            });
+
+            if (!existingUser)
+                return {
+                    code: 400,
+                    success: false,
+                    message: 'User not found',
+                };
+
+            if (existingUser.id !== req.session.userId) {
+                return {
+                    code: 401,
+                    success: false,
+                    message: 'Unauthorized',
+                };
+            }
+
+            if (
+                username === duplicateUser?.username &&
+                duplicateUser.id !== existingUser.id
+            ) {
+                return {
+                    code: 400,
+                    success: false,
+                    message: 'Duplicate username',
+                };
+            }
+
+            existingUser.username = username;
+            existingUser.address = address;
+            existingUser.phoneNumber = phoneNumber;
+            existingUser.birthday = birthday;
+            existingUser.fullName = fullName;
+
+            return {
+                code: 200,
+                success: true,
+                message: 'Delete successfully',
+                user: await existingUser.save(),
             };
         } catch (error) {
             return showError(error);

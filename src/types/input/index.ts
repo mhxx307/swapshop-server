@@ -9,3 +9,4 @@ export { default as FindArticleInput } from './find-article.input';
 export { default as DeleteArticleInput } from './delete-article.input';
 export { default as InsertCommentInput } from './insert-comment.input';
 export { default as UpdateCommentInput } from './update-comment.input';
+export { default as UpdateProfileInput } from './update-profile.input';
