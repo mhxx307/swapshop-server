@@ -11,6 +11,7 @@ import {
 } from 'typeorm';
 import User from './User';
 import Comment from './Comment';
+import Category from './Category';
 
 @ObjectType()
 @Entity('articles')
@@ -31,9 +32,9 @@ export default class Article extends BaseEntity {
     @Column()
     thumbnail!: string;
 
-    // @Field(() => [String], { nullable: true })
-    // @Column({ nullable: true })
-    // images: string[];
+    @Field(() => [String])
+    @Column('text', { array: true, nullable: true })
+    images: string[];
 
     @Field({ nullable: true })
     @Column({ nullable: true })
@@ -47,7 +48,12 @@ export default class Article extends BaseEntity {
     @Column()
     productName!: string;
 
-    // category
+    @Column()
+    categoryId!: string;
+
+    @Field(() => Category)
+    @ManyToOne(() => Category, (category) => category.articles)
+    category: Category;
 
     @Column()
     userId!: string;

@@ -17,7 +17,7 @@ import { IMyContext } from '../types';
 import { InsertCommentInput, UpdateCommentInput } from '../types/input';
 import { PaginatedComments } from '../types/paginated.type';
 import { CommentMutationResponse } from '../types/response';
-import { showError } from '../utils';
+import { hasMorePaginated, showError } from '../utils';
 
 @Resolver(() => Comment)
 export default class CommentResolver {
@@ -101,10 +101,12 @@ export default class CommentResolver {
             return {
                 totalCount: totalCount,
                 cursor: comments[comments.length - 1].createdDate,
-                hasMore: cursor
-                    ? comments[comments.length - 1].createdDate.toString() !==
-                      lastComment[0].createdDate.toString()
-                    : comments.length !== totalCount,
+                hasMore: hasMorePaginated({
+                    cursor,
+                    currentDataList: comments,
+                    lastItem: lastComment[0],
+                    totalCount,
+                }),
                 paginatedComments: comments,
             };
         } catch (error) {
@@ -190,7 +192,7 @@ export default class CommentResolver {
             }
 
             existingComment.text = text;
-            existingComment.status = "Updated";
+            existingComment.status = 'Updated';
 
             return {
                 code: 200,

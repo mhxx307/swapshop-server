@@ -18,10 +18,10 @@ import {
     InsertArticleInput,
     UpdateArticleInput,
 } from '../types/input';
-import { Article, User } from '../entities';
+import { Article, Category, User } from '../entities';
 import { IMyContext } from '../types';
 import { checkAuth } from '../middleware';
-import { showError } from '../utils';
+import { hasMorePaginated, showError } from '../utils';
 import { PaginatedArticles } from '../types/paginated.type';
 
 @Resolver(() => Article)
@@ -32,6 +32,14 @@ export default class ArticleResolver {
         @Ctx() { dataLoaders: { userLoader } }: IMyContext,
     ) {
         return await userLoader.load(root.userId);
+    }
+
+    @FieldResolver(() => Category)
+    async category(
+        @Root() root: Article,
+        @Ctx() { dataLoaders: { categoryLoader } }: IMyContext,
+    ) {
+        return await categoryLoader.load(root.categoryId);
     }
 
     @Mutation(() => ArticleMutationResponse)
@@ -47,7 +55,8 @@ export default class ArticleResolver {
                 discount,
                 price,
                 productName,
-                thumbnail,
+                images,
+                categoryId,
             } = insertArticleInput;
 
             const newArticle = Article.create({
@@ -56,8 +65,10 @@ export default class ArticleResolver {
                 discount,
                 price,
                 productName,
-                thumbnail,
+                thumbnail: images[0],
                 userId: req.session.userId,
+                images,
+                categoryId,
             });
 
             return {
@@ -105,10 +116,12 @@ export default class ArticleResolver {
             return {
                 totalCount,
                 cursor: articles[articles.length - 1].createdDate,
-                hasMore: cursor
-                    ? articles[articles.length - 1].createdDate.toString() !==
-                      lastArticle[0].createdDate.toString()
-                    : articles.length !== totalCount,
+                hasMore: hasMorePaginated({
+                    cursor,
+                    currentDataList: articles,
+                    lastItem: lastArticle[0],
+                    totalCount,
+                }),
                 paginatedArticles: articles,
             };
         } catch (error) {

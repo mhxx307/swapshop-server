@@ -23,9 +23,9 @@ interface IHasCreatedDate {
 }
 
 interface IHasMorePaginated<T extends IHasCreatedDate> {
-    cursor?: Date;
+    cursor?: string;
     currentDataList: T[];
-    lastItem: T[];
+    lastItem: T;
     totalCount: number;
 }
 
@@ -39,8 +39,7 @@ export function hasMorePaginated<T extends IHasCreatedDate>({
         return (
             currentDataList[
                 currentDataList.length - 1
-            ].createdDate.toString() !== lastItem[0].createdDate.toString() ??
-            true
+            ].createdDate.toString() !== lastItem.createdDate.toString() ?? true
         );
     } else {
         return currentDataList.length !== totalCount ?? true;

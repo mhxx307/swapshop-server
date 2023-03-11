@@ -6,7 +6,9 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
     BaseEntity,
+    OneToMany,
 } from 'typeorm';
+import Article from './Article';
 
 @ObjectType()
 @Entity('categories')
@@ -19,8 +21,8 @@ export default class Category extends BaseEntity {
     @Column({ unique: true })
     name!: string;
 
-    @Column()
-    description?: string;
+    @OneToMany(() => Article, (article) => article.category)
+    articles: Article[];
 
     @Field()
     @CreateDateColumn()
