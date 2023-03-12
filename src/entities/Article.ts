@@ -4,6 +4,7 @@ import {
     Column,
     CreateDateColumn,
     Entity,
+    ManyToMany,
     ManyToOne,
     OneToMany,
     PrimaryGeneratedColumn,
@@ -48,12 +49,12 @@ export default class Article extends BaseEntity {
     @Column()
     productName!: string;
 
-    @Column()
-    categoryId!: string;
+    @Column({ type: 'uuid', array: true })
+    categoryIds!: string[];
 
-    @Field(() => Category)
-    @ManyToOne(() => Category, (category) => category.articles)
-    category: Category;
+    @Field(() => [Category])
+    @ManyToMany(() => Category)
+    categories: Category[];
 
     @Column()
     userId!: string;

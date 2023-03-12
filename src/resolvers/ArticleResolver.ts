@@ -14,7 +14,6 @@ import { FindManyOptions, LessThan } from 'typeorm';
 import { ArticleMutationResponse } from '../types/response';
 import {
     DeleteArticleInput,
-    FindArticleInput,
     InsertArticleInput,
     UpdateArticleInput,
 } from '../types/input';
@@ -34,12 +33,14 @@ export default class ArticleResolver {
         return await userLoader.load(root.userId);
     }
 
-    @FieldResolver(() => Category)
-    async category(
+    @FieldResolver(() => [Category])
+    async categories(
         @Root() root: Article,
         @Ctx() { dataLoaders: { categoryLoader } }: IMyContext,
     ) {
-        return await categoryLoader.load(root.categoryId);
+        return root.categoryIds.map(
+            async (id) => await categoryLoader.load(id),
+        );
     }
 
     @Mutation(() => ArticleMutationResponse)
@@ -56,7 +57,7 @@ export default class ArticleResolver {
                 price,
                 productName,
                 images,
-                categoryId,
+                categoryIds,
             } = insertArticleInput;
 
             const newArticle = Article.create({
@@ -68,7 +69,7 @@ export default class ArticleResolver {
                 thumbnail: images[0],
                 userId: req.session.userId,
                 images,
-                categoryId,
+                categoryIds,
             });
 
             return {
@@ -135,10 +136,7 @@ export default class ArticleResolver {
     }
 
     @Query(() => Article, { nullable: true })
-    async article(
-        @Arg('findArticleInput') findArticleInput: FindArticleInput,
-    ): Promise<Article | null> {
-        const { id } = findArticleInput;
+    async article(@Arg('id') id: string): Promise<Article | null> {
         try {
             const article = await Article.findOne({
                 where: {

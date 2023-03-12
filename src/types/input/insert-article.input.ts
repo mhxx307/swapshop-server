@@ -11,8 +11,8 @@ export default class InsertArticleInput {
     @Field(() => [String])
     images!: string[];
 
-    @Field()
-    categoryId!: string;
+    @Field(() => [String])
+    categoryIds!: string[];
 
     @Field()
     productName!: string;
