@@ -2,14 +2,13 @@ import {
     Arg,
     Ctx,
     FieldResolver,
-    Int,
     Mutation,
     Query,
     Resolver,
     Root,
     UseMiddleware,
 } from 'type-graphql';
-import { FindManyOptions, LessThan } from 'typeorm';
+import { FindManyOptions, LessThan, Like } from 'typeorm';
 
 import { ArticleMutationResponse } from '../types/response';
 import {
@@ -21,7 +20,8 @@ import { Article, Category, User } from '../entities';
 import { IMyContext } from '../types';
 import { checkAuth } from '../middleware';
 import { hasMorePaginated, showError } from '../utils';
-import { PaginatedArticles } from '../types/paginated.type';
+import { PaginatedArticles, QueryConfig } from '../types/paginated.type';
+import { ORDER, SORT_BY } from '../constants/product';
 
 @Resolver(() => Article)
 export default class ArticleResolver {
@@ -85,20 +85,58 @@ export default class ArticleResolver {
 
     @Query(() => PaginatedArticles, { nullable: true })
     async articles(
-        @Arg('limit', () => Int) limit: number,
+        @Arg('queryConfig') queryConfig: QueryConfig,
         @Arg('cursor', { nullable: true }) cursor?: string,
     ): Promise<PaginatedArticles | null> {
         try {
-            const realLimit = Math.min(20, limit);
+            const { limit, categories, isFree, title, price_max, price_min } =
+                queryConfig;
+
+            let { order_by, sort_by } = queryConfig;
+
+            const realLimit = Math.min(30, limit);
 
             const findOptions:
                 | FindManyOptions<Article>
                 | { [key: string]: unknown } = {
-                order: {
-                    createdDate: 'DESC',
-                },
                 take: realLimit,
             };
+
+            if (categories) {
+                findOptions.where = {
+                    categories: {
+                        in: categories,
+                    },
+                };
+            }
+
+            if (title) {
+                findOptions.where = {
+                    title: Like(`%${title}%`),
+                };
+            }
+
+            if (isFree) {
+                findOptions.where = {
+                    price: null,
+                };
+            }
+
+            if (price_min || price_max) {
+                findOptions.where = {
+                    price: {
+                        between: [price_min, price_max],
+                    },
+                };
+            }
+
+            if (!ORDER.includes(order_by as string)) {
+                order_by = ORDER[0];
+            }
+
+            if (!SORT_BY.includes(sort_by as string)) {
+                sort_by = SORT_BY[0];
+            }
 
             let lastArticle: Article[] = [];
 
@@ -109,6 +147,10 @@ export default class ArticleResolver {
                     take: 1,
                 });
             }
+
+            findOptions.order = {
+                [sort_by as string]: order_by,
+            };
 
             const [articles, totalCount] = await Article.findAndCount(
                 findOptions,
