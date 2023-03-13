@@ -3,23 +3,23 @@ import { Field, InputType } from 'type-graphql';
 @InputType()
 export default class InsertArticleInput {
     @Field()
-    title: string;
+    title!: string;
 
     @Field()
-    description: string;
+    description!: string;
+
+    @Field(() => [String])
+    images!: string[];
+
+    @Field(() => [String])
+    categoryIds!: string[];
 
     @Field()
-    thumbnail!: string;
-
-    // @Field(() => [String], { nullable: true })
-    // images: string[];
+    productName!: string;
 
     @Field({ nullable: true })
     price: number;
 
     @Field({ nullable: true })
     discount: number;
-
-    @Field()
-    productName!: string;
 }

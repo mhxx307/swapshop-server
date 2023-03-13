@@ -56,8 +56,6 @@ export default class UserResolver {
         const validateRegisterInputErrors =
             validateRegisterInput(registerInput);
 
-        console.log(validateRegisterInputErrors);
-
         if (validateRegisterInputErrors !== null)
             return {
                 code: 400,

@@ -1,7 +1,7 @@
 import { RegisterInput } from '../types/input';
 
 const validateRegisterInput = (registerInput: RegisterInput) => {
-    const { email, username, password, fullName, phoneNumber } = registerInput;
+    const { email, username, password, fullName } = registerInput;
 
     const emailRegex =
         /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/g;
@@ -10,14 +10,14 @@ const validateRegisterInput = (registerInput: RegisterInput) => {
         /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/gm;
     const fullNameRegex =
         /(?:[A-ZẮẰẲẴẶĂẤẦẨẪẬÂÁÀÃẢẠĐẾỀỂỄỆÊÉÈẺẼẸÍÌỈĨỊỐỒỔỖỘÔỚỜỞỠỢƠÓÒÕỎỌỨỪỬỮỰƯÚÙỦŨỤÝỲỶỸỴ][a-zắằẳẵặăấầẩẫậâáàãảạđếềểễệêéèẻẽẹíìỉĩịốồổỗộôớờởỡợơóòõỏọứừửữựưúùủũụýỳỷỹỵ]{1,}\s)+[A-ZẮẰẲẴẶĂẤẦẨẪẬÂÁÀÃẢẠĐẾỀỂỄỆÊÉÈẺẼẸÍÌỈĨỊỐỒỔỖỘÔỚỜỞỠỢƠÓÒÕỎỌỨỪỬỮỰƯÚÙỦŨỤÝỲỶỸỴ][a-zắằẳẵặăấầẩẫậâáàãảạđếềểễệêéèẻẽẹíìỉĩịốồổỗộôớờởỡợơóòõỏọứừửữựưúùủũụýỳỷỹỵ]+/g;
-    const phoneNumberRegex =
-        /^(0|\+84)(\s|\.)?((3[3-9])|(5[689])|(7[06-9])|(8[1-6789])|(9[0-46-9]))(\d)(\s|\.)?(\d{3})(\s|\.)?(\d{3})$/gm;
+    // const phoneNumberRegex =
+    //     /^(0|\+84)(\s|\.)?((3[3-9])|(5[689])|(7[06-9])|(8[1-6789])|(9[0-46-9]))(\d)(\s|\.)?(\d{3})(\s|\.)?(\d{3})$/gm;
 
     const isEmailValidate = emailRegex.test(email);
     const isUserValidate = userRegex.test(username);
     const isPasswordValidate = passwordRegex.test(password);
     const isFullNameValidate = fullNameRegex.test(fullName);
-    const isPhoneNumberValidate = phoneNumberRegex.test(phoneNumber);
+    // const isPhoneNumberValidate = phoneNumberRegex.test(phoneNumber);
 
     if (!isEmailValidate) {
         console.log(isEmailValidate);
@@ -75,19 +75,19 @@ const validateRegisterInput = (registerInput: RegisterInput) => {
         };
     }
 
-    if (!isPhoneNumberValidate) {
-        console.log(isPhoneNumberValidate);
-        return {
-            message: 'Invalid phone number',
-            errors: [
-                {
-                    field: 'phoneNumber',
-                    message:
-                        'Vietnamese phone number. Check: https://completejavascript.com/mot-so-bieu-thuc-chinh-quy-regexp-hay/',
-                },
-            ],
-        };
-    }
+    // if (!isPhoneNumberValidate) {
+    //     console.log(isPhoneNumberValidate);
+    //     return {
+    //         message: 'Invalid phone number',
+    //         errors: [
+    //             {
+    //                 field: 'phoneNumber',
+    //                 message:
+    //                     'Vietnamese phone number. Check: https://completejavascript.com/mot-so-bieu-thuc-chinh-quy-regexp-hay/',
+    //             },
+    //         ],
+    //     };
+    // }
 
     return null;
 };

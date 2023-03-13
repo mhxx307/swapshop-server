@@ -16,8 +16,13 @@ import mongoose from 'mongoose';
 import session from 'express-session';
 const MongoDBStore = require('connect-mongodb-session')(session);
 
-import { Article, User, Comment } from './entities';
-import { UserResolver, ArticleResolver, CommentResolver } from './resolvers';
+import { Article, User, Comment, Category } from './entities';
+import {
+    UserResolver,
+    ArticleResolver,
+    CommentResolver,
+    CategoryResolver,
+} from './resolvers';
 import {
     COOKIE_MAX_AGE,
     COLLECTION_SESSION_NAME,
@@ -46,7 +51,7 @@ const main = async () => {
         database: process.env.DATABASE_NAME,
         logging: true,
         synchronize: true,
-        entities: [User, Comment, Article],
+        entities: [User, Comment, Article, Category],
     });
 
     PostgresDataSource.initialize()
@@ -109,7 +114,12 @@ const main = async () => {
     // setting up apollo server
     const server = new ApolloServer({
         schema: await buildSchema({
-            resolvers: [UserResolver, ArticleResolver, CommentResolver],
+            resolvers: [
+                UserResolver,
+                ArticleResolver,
+                CommentResolver,
+                CategoryResolver,
+            ],
             validate: false,
         }),
         plugins: [

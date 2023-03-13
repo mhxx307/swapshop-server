@@ -4,6 +4,7 @@ import {
     Column,
     CreateDateColumn,
     Entity,
+    ManyToMany,
     ManyToOne,
     OneToMany,
     PrimaryGeneratedColumn,
@@ -11,6 +12,7 @@ import {
 } from 'typeorm';
 import User from './User';
 import Comment from './Comment';
+import Category from './Category';
 
 @ObjectType()
 @Entity('articles')
@@ -31,9 +33,9 @@ export default class Article extends BaseEntity {
     @Column()
     thumbnail!: string;
 
-    // @Field(() => [String], { nullable: true })
-    // @Column({ nullable: true })
-    // images: string[];
+    @Field(() => [String])
+    @Column('text', { array: true, nullable: true })
+    images: string[];
 
     @Field({ nullable: true })
     @Column({ nullable: true })
@@ -47,7 +49,12 @@ export default class Article extends BaseEntity {
     @Column()
     productName!: string;
 
-    // category
+    @Column({ type: 'uuid', array: true })
+    categoryIds!: string[];
+
+    @Field(() => [Category])
+    @ManyToMany(() => Category)
+    categories: Category[];
 
     @Column()
     userId!: string;

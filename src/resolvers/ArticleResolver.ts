@@ -2,27 +2,33 @@ import {
     Arg,
     Ctx,
     FieldResolver,
-    Int,
     Mutation,
     Query,
     Resolver,
     Root,
     UseMiddleware,
 } from 'type-graphql';
-import { FindManyOptions, LessThan } from 'typeorm';
+import {
+    FindManyOptions,
+    In,
+    LessThan,
+    LessThanOrEqual,
+    Like,
+    MoreThanOrEqual,
+} from 'typeorm';
 
 import { ArticleMutationResponse } from '../types/response';
 import {
     DeleteArticleInput,
-    FindArticleInput,
     InsertArticleInput,
     UpdateArticleInput,
 } from '../types/input';
-import { Article, User } from '../entities';
+import { Article, Category, User } from '../entities';
 import { IMyContext } from '../types';
 import { checkAuth } from '../middleware';
-import { showError } from '../utils';
-import { PaginatedArticles } from '../types/paginated.type';
+import { hasMorePaginated, showError } from '../utils';
+import { PaginatedArticles, QueryConfig } from '../types/paginated.type';
+import { ORDER, SORT_BY } from '../constants/product';
 
 @Resolver(() => Article)
 export default class ArticleResolver {
@@ -32,6 +38,16 @@ export default class ArticleResolver {
         @Ctx() { dataLoaders: { userLoader } }: IMyContext,
     ) {
         return await userLoader.load(root.userId);
+    }
+
+    @FieldResolver(() => [Category])
+    async categories(
+        @Root() root: Article,
+        @Ctx() { dataLoaders: { categoryLoader } }: IMyContext,
+    ) {
+        return root.categoryIds.map(
+            async (id) => await categoryLoader.load(id),
+        );
     }
 
     @Mutation(() => ArticleMutationResponse)
@@ -47,7 +63,8 @@ export default class ArticleResolver {
                 discount,
                 price,
                 productName,
-                thumbnail,
+                images,
+                categoryIds,
             } = insertArticleInput;
 
             const newArticle = Article.create({
@@ -56,8 +73,10 @@ export default class ArticleResolver {
                 discount,
                 price,
                 productName,
-                thumbnail,
+                thumbnail: images[0],
                 userId: req.session.userId,
+                images,
+                categoryIds,
             });
 
             return {
@@ -73,20 +92,65 @@ export default class ArticleResolver {
 
     @Query(() => PaginatedArticles, { nullable: true })
     async articles(
-        @Arg('limit', () => Int) limit: number,
+        @Arg('queryConfig') queryConfig: QueryConfig,
         @Arg('cursor', { nullable: true }) cursor?: string,
     ): Promise<PaginatedArticles | null> {
         try {
-            const realLimit = Math.min(20, limit);
+            const { limit, categories, isFree, title, price_max, price_min } =
+                queryConfig;
+
+            let { order_by, sort_by } = queryConfig;
+
+            const realLimit = Math.min(30, Number(limit) || 30);
 
             const findOptions:
                 | FindManyOptions<Article>
                 | { [key: string]: unknown } = {
-                order: {
-                    createdDate: 'DESC',
-                },
                 take: realLimit,
             };
+
+            if (categories && categories.length > 0) {
+                const categoryIds = categories.map((category) => [category]);
+                findOptions.where = {
+                    categoryIds: In(categoryIds),
+                };
+            }
+
+            if (title) {
+                findOptions.where = {
+                    title: Like(`%${title}%`),
+                };
+            }
+
+            if (isFree) {
+                findOptions.where = {
+                    price: null,
+                };
+            }
+
+            if (Number(price_min) && Number(price_max)) {
+                findOptions.where = {
+                    price: {
+                        between: [Number(price_min), Number(price_max)],
+                    },
+                };
+            } else if (Number(price_min)) {
+                findOptions.where = {
+                    price: MoreThanOrEqual(Number(price_min)),
+                };
+            } else if (Number(price_max)) {
+                findOptions.where = {
+                    price: LessThanOrEqual(Number(price_max)),
+                };
+            }
+
+            if (!ORDER.includes(order_by as string)) {
+                order_by = ORDER[0];
+            }
+
+            if (!SORT_BY.includes(sort_by as string)) {
+                sort_by = SORT_BY[0];
+            }
 
             let lastArticle: Article[] = [];
 
@@ -98,17 +162,26 @@ export default class ArticleResolver {
                 });
             }
 
+            findOptions.order = {
+                [sort_by as string]: order_by,
+            };
+
             const [articles, totalCount] = await Article.findAndCount(
                 findOptions,
             );
 
             return {
                 totalCount,
-                cursor: articles[articles.length - 1].createdDate,
-                hasMore: cursor
-                    ? articles[articles.length - 1].createdDate.toString() !==
-                      lastArticle[0].createdDate.toString()
-                    : articles.length !== totalCount,
+                cursor:
+                    articles.length > 0
+                        ? articles[articles.length - 1].createdDate
+                        : new Date(),
+                hasMore: hasMorePaginated({
+                    cursor,
+                    currentDataList: articles,
+                    lastItem: lastArticle[0],
+                    totalCount,
+                }),
                 paginatedArticles: articles,
             };
         } catch (error) {
@@ -122,10 +195,7 @@ export default class ArticleResolver {
     }
 
     @Query(() => Article, { nullable: true })
-    async article(
-        @Arg('findArticleInput') findArticleInput: FindArticleInput,
-    ): Promise<Article | null> {
-        const { id } = findArticleInput;
+    async article(@Arg('id') id: string): Promise<Article | null> {
         try {
             const article = await Article.findOne({
                 where: {

@@ -4,7 +4,7 @@
     "port": 5432,
     "username": "postgres",
     "password": "123456",
-    "database": "reddit-for-migrations",
+    "database": "second_chance-for-migrations",
     "entities": ["dist/entities/*.js"],
     "migrations": ["dist/migrations/*.js"]
 }

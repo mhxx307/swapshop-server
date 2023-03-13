@@ -4,7 +4,7 @@
 	"port": 5432,
 	"username": "your-username",
 	"password": "your-password",
-	"database": "reddit-for-migrations",
+	"database": "db-for-migrations",
 	"entities": ["dist/entities/*.js"],
 	"migrations": ["dist/migrations/*.js"]
 }
