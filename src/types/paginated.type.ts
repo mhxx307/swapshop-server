@@ -36,8 +36,8 @@ export class PaginatedComments extends Paginated {
 
 @InputType()
 export class QueryConfig {
-    @Field()
-    limit: number;
+    @Field({ nullable: true })
+    limit?: string;
 
     @Field(() => [String], { nullable: true })
     categories?: string[];
@@ -49,13 +49,13 @@ export class QueryConfig {
     order_by?: string;
 
     @Field({ nullable: true })
-    price_max?: number;
+    price_max?: string;
 
     @Field({ nullable: true })
-    price_min?: number;
+    price_min?: string;
 
     @Field({ nullable: true })
-    isFree?: boolean;
+    isFree?: string;
 
     @Field({ nullable: true })
     title?: string;

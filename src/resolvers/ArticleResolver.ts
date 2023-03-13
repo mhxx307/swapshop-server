@@ -8,7 +8,14 @@ import {
     Root,
     UseMiddleware,
 } from 'type-graphql';
-import { FindManyOptions, LessThan, Like } from 'typeorm';
+import {
+    FindManyOptions,
+    In,
+    LessThan,
+    LessThanOrEqual,
+    Like,
+    MoreThanOrEqual,
+} from 'typeorm';
 
 import { ArticleMutationResponse } from '../types/response';
 import {
@@ -94,7 +101,7 @@ export default class ArticleResolver {
 
             let { order_by, sort_by } = queryConfig;
 
-            const realLimit = Math.min(30, limit);
+            const realLimit = Math.min(30, Number(limit) || 30);
 
             const findOptions:
                 | FindManyOptions<Article>
@@ -102,11 +109,10 @@ export default class ArticleResolver {
                 take: realLimit,
             };
 
-            if (categories) {
+            if (categories && categories.length > 0) {
+                const categoryIds = categories.map((category) => [category]);
                 findOptions.where = {
-                    categories: {
-                        in: categories,
-                    },
+                    categoryIds: In(categoryIds),
                 };
             }
 
@@ -122,11 +128,19 @@ export default class ArticleResolver {
                 };
             }
 
-            if (price_min || price_max) {
+            if (Number(price_min) && Number(price_max)) {
                 findOptions.where = {
                     price: {
-                        between: [price_min, price_max],
+                        between: [Number(price_min), Number(price_max)],
                     },
+                };
+            } else if (Number(price_min)) {
+                findOptions.where = {
+                    price: MoreThanOrEqual(Number(price_min)),
+                };
+            } else if (Number(price_max)) {
+                findOptions.where = {
+                    price: LessThanOrEqual(Number(price_max)),
                 };
             }
 
@@ -158,7 +172,10 @@ export default class ArticleResolver {
 
             return {
                 totalCount,
-                cursor: articles[articles.length - 1].createdDate,
+                cursor:
+                    articles.length > 0
+                        ? articles[articles.length - 1].createdDate
+                        : new Date(),
                 hasMore: hasMorePaginated({
                     cursor,
                     currentDataList: articles,
