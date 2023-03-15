@@ -11,7 +11,6 @@ import {
 import {
     FindManyOptions,
     In,
-    LessThan,
     LessThanOrEqual,
     Like,
     MoreThanOrEqual,
@@ -26,8 +25,8 @@ import {
 import { Article, Category, User } from '../entities';
 import { IMyContext } from '../types';
 import { checkAuth } from '../middleware';
-import { hasMorePaginated, showError } from '../utils';
-import { PaginatedArticles, QueryConfig } from '../types/paginated.type';
+import { showError } from '../utils';
+import { QueryConfig, ResponseSuccess } from '../types/pagination.type';
 import { ORDER, SORT_BY } from '../constants/product';
 
 @Resolver(() => Article)
@@ -90,14 +89,20 @@ export default class ArticleResolver {
         }
     }
 
-    @Query(() => PaginatedArticles, { nullable: true })
+    @Query(() => ResponseSuccess)
     async articles(
         @Arg('queryConfig') queryConfig: QueryConfig,
-        @Arg('cursor', { nullable: true }) cursor?: string,
-    ): Promise<PaginatedArticles | null> {
+    ): Promise<ResponseSuccess> {
         try {
-            const { limit, categories, isFree, title, price_max, price_min } =
-                queryConfig;
+            const {
+                limit,
+                categories,
+                isFree,
+                title,
+                price_max,
+                price_min,
+                page = 1,
+            } = queryConfig;
 
             let { order_by, sort_by } = queryConfig;
 
@@ -152,45 +157,35 @@ export default class ArticleResolver {
                 sort_by = SORT_BY[0];
             }
 
-            let lastArticle: Article[] = [];
-
-            if (cursor) {
-                findOptions.where = { createdDate: LessThan(cursor) };
-                lastArticle = await Article.find({
-                    order: { createdDate: 'ASC' },
-                    take: 1,
-                });
-            }
-
             findOptions.order = {
                 [sort_by as string]: order_by,
             };
+
+            findOptions.skip = Number(page) * realLimit - realLimit;
+
+            findOptions.take = realLimit;
 
             const [articles, totalCount] = await Article.findAndCount(
                 findOptions,
             );
 
+            const page_size = Math.ceil(totalCount / realLimit) || 1;
+
             return {
-                totalCount,
-                cursor:
-                    articles.length > 0
-                        ? articles[articles.length - 1].createdDate
-                        : new Date(),
-                hasMore: hasMorePaginated({
-                    cursor,
-                    currentDataList: articles,
-                    lastItem: lastArticle[0],
-                    totalCount,
-                }),
-                paginatedArticles: articles,
+                message: 'Lấy các articles thành công',
+                data: {
+                    articles,
+                    pagination: {
+                        page,
+                        limit: realLimit,
+                        page_size,
+                    },
+                },
             };
         } catch (error) {
-            if (error instanceof Error) {
-                console.log(error.message);
-            } else {
-                console.log('Unexpected error', error);
-            }
-            return null;
+            return {
+                message: 'Something went wrong',
+            };
         }
     }
 
