@@ -41,10 +41,6 @@ export default class Article extends BaseEntity {
     @Column({ nullable: true })
     price: number;
 
-    @Field({ nullable: true })
-    @Column({ nullable: true })
-    discount: number;
-
     @Field()
     @Column()
     productName!: string;

@@ -19,7 +19,4 @@ export default class InsertArticleInput {
 
     @Field({ nullable: true })
     price: number;
-
-    @Field({ nullable: true })
-    discount: number;
 }

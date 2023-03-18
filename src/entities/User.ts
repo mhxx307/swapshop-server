@@ -8,8 +8,7 @@ import {
     BaseEntity,
     OneToMany,
 } from 'typeorm';
-import Article from './Article';
-import Comment from './Comment';
+import { Article, Comment, UserRole } from '.';
 
 @ObjectType()
 @Entity('users')
@@ -50,8 +49,11 @@ export default class User extends BaseEntity {
     avatar: string;
 
     @Field({ nullable: true })
-    @Column({ nullable: true })
-    isOnline: boolean;
+    @Column({ nullable: true, default: 0 })
+    rating: number;
+
+    @OneToMany(() => UserRole, (ur) => ur.user)
+    roles: UserRole[];
 
     @OneToMany(() => Article, (article) => article.user)
     articles: Article[];

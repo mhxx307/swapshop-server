@@ -6,11 +6,13 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
     BaseEntity,
+    OneToMany,
 } from 'typeorm';
+import UserRole from './UserRole';
 
 @ObjectType()
-@Entity('categories')
-export default class Category extends BaseEntity {
+@Entity('roles')
+export default class Permission extends BaseEntity {
     @Field((_type) => ID)
     @PrimaryGeneratedColumn('uuid')
     id!: string;
@@ -19,9 +21,8 @@ export default class Category extends BaseEntity {
     @Column({ unique: true })
     name!: string;
 
-    @Field()
-    @Column()
-    image: string;
+    @OneToMany(() => UserRole, (ur) => ur.role)
+    users: UserRole[];
 
     @Field()
     @CreateDateColumn()

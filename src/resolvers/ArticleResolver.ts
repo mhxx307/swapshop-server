@@ -59,7 +59,6 @@ export default class ArticleResolver {
             const {
                 title,
                 description,
-                discount,
                 price,
                 productName,
                 images,
@@ -69,7 +68,6 @@ export default class ArticleResolver {
             const newArticle = Article.create({
                 title,
                 description,
-                discount,
                 price,
                 productName,
                 thumbnail: images[0],

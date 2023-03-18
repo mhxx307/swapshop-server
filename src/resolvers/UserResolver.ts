@@ -11,7 +11,7 @@ import {
 import * as argon2 from 'argon2';
 import { v4 as uuidv4 } from 'uuid';
 
-import { User } from '../entities';
+import { Role, User, UserRole } from '../entities';
 import {
     ChangePasswordInput,
     ChangePasswordLoggedInput,
@@ -27,7 +27,7 @@ import {
     validateRegisterInput,
 } from '../validations';
 import { IMyContext } from '../types';
-import { COOKIE_NAME } from '../constants';
+import { COOKIE_NAME, roles } from '../constants';
 import { checkAuth, checkIsLogin } from '../middleware';
 import { TokenModel } from '../models';
 import { sendEmail, showError } from '../utils';
@@ -119,9 +119,14 @@ export default class UserResolver {
             });
 
             const savedUser = await newUser.save();
+            const role = await Role.findOne({ where: { name: roles.USER } });
+
+            await UserRole.create({
+                userId: savedUser.id,
+                roleId: role?.id,
+            }).save();
 
             req.session.userId = savedUser.id;
-            console.log(savedUser.id);
 
             return {
                 code: 200,

@@ -4,3 +4,5 @@ export { default as Comment } from './Comment';
 export { default as Review } from './Review';
 export { default as Message } from './Message';
 export { default as Article } from './Article';
+export { default as Role } from './Role';
+export { default as UserRole } from './UserRole';
