@@ -1,6 +1,7 @@
 import { UserMutationResponse } from '../types/response';
 import {
     Arg,
+    Ctx,
     FieldResolver,
     Mutation,
     Query,
@@ -10,21 +11,24 @@ import {
 
 import { Role, User, UserRole } from '../entities';
 import { showError } from '../utils';
+import { IMyContext } from '../types';
 
 @Resolver(() => UserRole)
 export default class UserRoleResolver {
     @FieldResolver((_return) => User)
-    user(@Root() root: UserRole) {
-        return User.findOne({
-            where: { id: root.userId },
-        });
+    async user(
+        @Root() root: UserRole,
+        @Ctx() { dataLoaders: { userLoader } }: IMyContext,
+    ) {
+        return await userLoader.load(root.userId);
     }
 
     @FieldResolver((_return) => Role)
-    role(@Root() root: UserRole) {
-        return Role.findOne({
-            where: { id: root.roleId },
-        });
+    async role(
+        @Root() root: UserRole,
+        @Ctx() { dataLoaders: { roleLoader } }: IMyContext,
+    ) {
+        return await roleLoader.load(root.roleId);
     }
 
     @Mutation(() => UserMutationResponse)

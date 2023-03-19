@@ -1,5 +1,5 @@
 import { In } from 'typeorm';
-import { User, Article, Category } from '../entities';
+import { User, Article, Category, Role } from '../entities';
 import DataLoader from 'dataloader';
 
 const batchGetUsers = async (userIds: string[]) => {
@@ -21,6 +21,11 @@ const batchGetCategories = async (categoryIds: string[]) => {
     );
 };
 
+const batchGetRoles = async (roleIds: string[]) => {
+    const roles = await Role.findBy({ id: In(roleIds) });
+    return roleIds.map((roleId) => roles.find((role) => role.id === roleId));
+};
+
 export const buildDataLoaders = () => ({
     userLoader: new DataLoader<string, User | undefined>((userIds) =>
         batchGetUsers(userIds as string[]),
@@ -30,5 +35,8 @@ export const buildDataLoaders = () => ({
     ),
     categoryLoader: new DataLoader<string, Category | undefined>(
         (categoryIds) => batchGetCategories(categoryIds as string[]),
+    ),
+    roleLoader: new DataLoader<string, Role | undefined>((roleIds) =>
+        batchGetRoles(roleIds as string[]),
     ),
 });
