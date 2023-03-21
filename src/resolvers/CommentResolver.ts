@@ -12,10 +12,10 @@ import {
 import { FindManyOptions, LessThan } from 'typeorm';
 
 import { Article, Comment, User } from '../entities';
-import { checkAuth } from '../middleware';
-import { IMyContext } from '../types';
+import { checkAuth } from '../middleware/session';
+import { IMyContext } from '../types/context';
 import { InsertCommentInput, UpdateCommentInput } from '../types/input';
-import { PaginatedComments } from '../types/pagination.type';
+import { PaginatedComments } from '../types/pagination';
 import { CommentMutationResponse } from '../types/response';
 import { hasMorePaginated, showError } from '../utils';
 

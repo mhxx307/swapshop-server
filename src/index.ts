@@ -31,14 +31,14 @@ import {
     __prod__,
     COOKIE_NAME,
 } from './constants';
-import { IMyContext } from './types';
+import { IMyContext } from './types/context';
 
 const main = async () => {
     const app = express();
 
     app.use(
         cors({
-            origin: 'http://localhost:3000',
+            origin: process.env.WEBSITE_URL_DEV as string,
             credentials: true,
         }),
     );
@@ -97,7 +97,7 @@ const main = async () => {
     app.use(
         session({
             name: COOKIE_NAME,
-            secret: process.env.SESSION_SECRET_DEV_PROD as string,
+            secret: process.env.SESSION_SECRET as string,
             cookie: {
                 maxAge: COOKIE_MAX_AGE,
                 httpOnly: true,
@@ -141,7 +141,7 @@ const main = async () => {
     app.use(
         '/graphql',
         cors({
-            origin: 'http://localhost:3000',
+            origin: process.env.WEBSITE_URL_DEV as string,
             credentials: true,
         }),
         express.json(),

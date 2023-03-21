@@ -26,11 +26,12 @@ import {
     validateChangePasswordInput,
     validateRegisterInput,
 } from '../validations';
-import { IMyContext } from '../types';
+import { IMyContext } from '../types/context';
 import { COOKIE_NAME, roles } from '../constants';
-import { checkAuth, checkIsLogin } from '../middleware';
+import { checkAuth, checkIsLogin } from '../middleware/session';
 import { TokenModel } from '../models';
 import { sendEmail, showError } from '../utils';
+import { findRoles } from '../utils/user';
 
 @Resolver(() => User)
 export default class UserResolver {
@@ -127,6 +128,7 @@ export default class UserResolver {
             }).save();
 
             req.session.userId = savedUser.id;
+            req.session.roles = await findRoles(savedUser);
 
             return {
                 code: 200,
@@ -265,6 +267,7 @@ export default class UserResolver {
             }
 
             req.session.userId = existingUser.id;
+            req.session.roles = await findRoles(existingUser);
 
             return {
                 code: 200,

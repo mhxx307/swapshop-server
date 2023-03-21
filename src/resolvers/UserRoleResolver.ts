@@ -11,7 +11,7 @@ import {
 
 import { Role, User, UserRole } from '../entities';
 import { showError } from '../utils';
-import { IMyContext } from '../types';
+import { IMyContext } from '../types/context';
 
 @Resolver(() => UserRole)
 export default class UserRoleResolver {

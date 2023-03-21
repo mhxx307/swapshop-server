@@ -1,6 +1,6 @@
 import { MiddlewareFn } from 'type-graphql';
-import { IMyContext } from '../types';
 import { GraphQLError } from 'graphql';
+import { IMyContext } from '../types/context';
 
 export const checkAuth: MiddlewareFn<IMyContext> = async (
     { context: { req } },

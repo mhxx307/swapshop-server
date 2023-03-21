@@ -23,10 +23,10 @@ import {
     UpdateArticleInput,
 } from '../types/input';
 import { Article, Category, User } from '../entities';
-import { IMyContext } from '../types';
-import { checkAuth } from '../middleware';
+import { IMyContext } from '../types/context';
+import { checkAuth } from '../middleware/session';
 import { showError } from '../utils';
-import { QueryConfig, ResponseSuccess } from '../types/pagination.type';
+import { QueryConfig, ResponseSuccess } from '../types/pagination';
 import { ORDER, SORT_BY } from '../constants/product';
 
 @Resolver(() => Article)
