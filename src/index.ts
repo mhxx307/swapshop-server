@@ -32,16 +32,20 @@ import {
     COOKIE_NAME,
 } from './constants';
 import { IMyContext } from './types';
+import refreshTokenRoute from './routes/refreshTokenRoute';
+import cookieParser from 'cookie-parser';
 
 const main = async () => {
     const app = express();
 
     app.use(
         cors({
-            origin: 'http://localhost:3000',
+            origin: process.env.WEBSITE_URL_DEV as string,
             credentials: true,
         }),
     );
+
+    app.use(cookieParser());
 
     // postgres connection
     const PostgresDataSource = new DataSource({
@@ -97,7 +101,7 @@ const main = async () => {
     app.use(
         session({
             name: COOKIE_NAME,
-            secret: process.env.SESSION_SECRET_DEV_PROD as string,
+            secret: process.env.SESSION_SECRET as string,
             cookie: {
                 maxAge: COOKIE_MAX_AGE,
                 httpOnly: true,
@@ -141,18 +145,23 @@ const main = async () => {
     app.use(
         '/graphql',
         cors({
-            origin: 'http://localhost:3000',
+            origin: process.env.WEBSITE_URL_DEV as string,
             credentials: true,
         }),
         express.json(),
         expressMiddleware(server, {
-            context: async ({ req, res }): Promise<IMyContext> => ({
+            context: async ({
+                req,
+                res,
+            }): Promise<Pick<IMyContext, 'req' | 'res' | 'dataLoaders'>> => ({
                 req,
                 res,
                 dataLoaders: buildDataLoaders(),
             }),
         }),
     );
+
+    app.use('/refresh_token', refreshTokenRoute);
 
     // run server
     const PORT = process.env.PORT || 4000;

@@ -14,7 +14,7 @@ export const checkAuth: MiddlewareFn<IMyContext> = async (
     return next();
 };
 
-export const checkIsLogin: MiddlewareFn<IMyContext> = async (
+export const checkAlreadyLogin: MiddlewareFn<IMyContext> = async (
     { context: { req } },
     next,
 ) => {

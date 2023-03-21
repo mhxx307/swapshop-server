@@ -2,6 +2,7 @@ import {
     Arg,
     Ctx,
     FieldResolver,
+    ID,
     Mutation,
     Query,
     Resolver,
@@ -27,31 +28,39 @@ import {
     validateRegisterInput,
 } from '../validations';
 import { IMyContext } from '../types';
-import { COOKIE_NAME, roles } from '../constants';
-import { checkAuth, checkIsLogin } from '../middleware';
+import {
+    COOKIE_NAME,
+    roles,
+    __prod__,
+    REFRESH_TOKEN_COOKIE_NAME,
+} from '../constants';
 import { TokenModel } from '../models';
 import { sendEmail, showError } from '../utils';
+import { createToken, sendRefreshToken } from '../utils/auth';
+import { verifyToken } from '../middleware/jwt';
+import { checkAlreadyLogin } from '../middleware/session';
 
 @Resolver(() => User)
 export default class UserResolver {
     @FieldResolver((_return) => String)
-    email(@Root() user: User, @Ctx() { req }: IMyContext) {
-        return req.session.userId === user.id ? user.email : '';
+    email(@Root() user: User, @Ctx() { user: { userId } }: IMyContext) {
+        return userId === user.id ? user.email : '';
     }
 
     @Query(() => User, { nullable: true })
-    async me(@Ctx() { req }: IMyContext): Promise<User | undefined | null> {
-        const userId = req.session.userId;
+    @UseMiddleware(verifyToken)
+    async me(
+        @Ctx() { user: { userId } }: IMyContext,
+    ): Promise<User | undefined | null> {
         if (!userId) return null;
         const user = await User.findOne({ where: { id: userId } });
         return user;
     }
 
     @Mutation(() => UserMutationResponse)
-    @UseMiddleware(checkIsLogin)
+    @UseMiddleware(checkAlreadyLogin)
     async register(
         @Arg('registerInput') registerInput: RegisterInput,
-        @Ctx() { req }: IMyContext,
     ): Promise<UserMutationResponse> {
         const validateRegisterInputErrors =
             validateRegisterInput(registerInput);
@@ -126,8 +135,6 @@ export default class UserResolver {
                 roleId: role?.id,
             }).save();
 
-            req.session.userId = savedUser.id;
-
             return {
                 code: 200,
                 success: true,
@@ -140,7 +147,7 @@ export default class UserResolver {
     }
 
     @Mutation(() => UserMutationResponse)
-    @UseMiddleware(checkAuth)
+    @UseMiddleware(verifyToken)
     async updateProfile(
         @Arg('updateProfileInput') updateProfileInput: UpdateProfileInput,
         @Ctx() { req }: IMyContext,
@@ -205,10 +212,10 @@ export default class UserResolver {
     }
 
     @Mutation(() => UserMutationResponse)
-    @UseMiddleware(checkIsLogin)
+    @UseMiddleware(checkAlreadyLogin)
     async login(
         @Arg('loginInput') loginInput: LoginInput,
-        @Ctx() { req }: IMyContext,
+        @Ctx() { req, res }: IMyContext,
     ): Promise<UserMutationResponse> {
         try {
             const { usernameOrEmail, password } = loginInput;
@@ -264,13 +271,21 @@ export default class UserResolver {
                 };
             }
 
+            // set session storage
             req.session.userId = existingUser.id;
+
+            // set cookie for refresh token
+            await sendRefreshToken(res, existingUser);
 
             return {
                 code: 200,
                 success: true,
                 message: 'Logged in successfully',
                 user: existingUser,
+                accessToken: await createToken({
+                    type: 'accessToken',
+                    user: existingUser,
+                }),
             };
         } catch (error) {
             return showError(error);
@@ -278,9 +293,31 @@ export default class UserResolver {
     }
 
     @Mutation(() => Boolean)
-    @UseMiddleware(checkAuth)
-    async logout(@Ctx() { req, res }: IMyContext) {
+    // @UseMiddleware(verifyToken)
+    async logout(
+        @Arg('userId', () => ID) userId: string,
+        @Ctx() { req, res }: IMyContext,
+    ) {
+        const existingUser = await User.findOne({
+            where: {
+                id: userId,
+            },
+        });
+        if (!existingUser) {
+            return new Promise((resolve) => {
+                resolve(false);
+            });
+        }
+        existingUser.tokenVersion += 1;
+        await existingUser.save();
+
         return new Promise((resolve) => {
+            res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, {
+                httpOnly: true,
+                sameSite: 'lax',
+                secure: __prod__,
+                path: '/refresh_token',
+            });
             res.clearCookie(COOKIE_NAME);
             req.session.destroy((error) => {
                 if (error) {
@@ -293,6 +330,7 @@ export default class UserResolver {
     }
 
     @Mutation(() => UserMutationResponse)
+    @UseMiddleware(checkAlreadyLogin)
     async forgotPassword(
         @Arg('forgotPasswordInput') { email }: ForgotPasswordInput,
     ): Promise<UserMutationResponse> {
@@ -322,7 +360,11 @@ export default class UserResolver {
             // send reset password link to user via email
             await sendEmail(
                 email,
-                `<a href="http://localhost:3000/change-password?token=${resetToken}&userId=${user.id}">Click here to reset your password</a> - Do not send this link to other`,
+                `<a href="${
+                    process.env.WEBSITE_URL_DEV as string
+                }/change-password?token=${resetToken}&userId=${
+                    user.id
+                }">Click here to reset your password</a> - Do not send this link to other`,
             );
 
             return {
@@ -336,6 +378,7 @@ export default class UserResolver {
     }
 
     @Mutation(() => UserMutationResponse)
+    @UseMiddleware(checkAlreadyLogin)
     async changePassword(
         @Arg('token') token: string,
         @Arg('userId') userId: string,
@@ -421,11 +464,11 @@ export default class UserResolver {
     }
 
     @Mutation(() => UserMutationResponse)
-    @UseMiddleware(checkAuth)
+    @UseMiddleware(verifyToken)
     async changePasswordLogged(
         @Arg('changePasswordLoggedInput')
         changePasswordLoggedInput: ChangePasswordLoggedInput,
-        @Ctx() { req }: IMyContext,
+        @Ctx() { user: userContext }: IMyContext,
     ): Promise<UserMutationResponse> {
         const validateChangePasswordError = validateChangePasswordLoggedInput(
             changePasswordLoggedInput,
@@ -438,7 +481,7 @@ export default class UserResolver {
         }
 
         try {
-            const userId = req.session.userId;
+            const userId = userContext.userId;
             const { oldPassword, newPassword } = changePasswordLoggedInput;
 
             const user = await User.findOne({ where: { id: userId } });

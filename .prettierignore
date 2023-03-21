@@ -2,3 +2,5 @@ node_modules/
 dist/
 README.md
 changelog.config.cjs
+auth.md
+document-api.md

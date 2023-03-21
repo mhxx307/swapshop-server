@@ -24,10 +24,10 @@ import {
 } from '../types/input';
 import { Article, Category, User } from '../entities';
 import { IMyContext } from '../types';
-import { checkAuth } from '../middleware';
 import { showError } from '../utils';
 import { QueryConfig, ResponseSuccess } from '../types/pagination.type';
 import { ORDER, SORT_BY } from '../constants/product';
+import { verifyToken } from '../middleware/jwt';
 
 @Resolver(() => Article)
 export default class ArticleResolver {
@@ -50,10 +50,10 @@ export default class ArticleResolver {
     }
 
     @Mutation(() => ArticleMutationResponse)
-    @UseMiddleware(checkAuth)
+    @UseMiddleware(verifyToken)
     async insertArticle(
         @Arg('insertArticleInput') insertArticleInput: InsertArticleInput,
-        @Ctx() { req }: IMyContext,
+        @Ctx() { user: { userId } }: IMyContext,
     ): Promise<ArticleMutationResponse> {
         try {
             const {
@@ -71,7 +71,7 @@ export default class ArticleResolver {
                 price,
                 productName,
                 thumbnail: images[0],
-                userId: req.session.userId,
+                userId: userId,
                 images,
                 categoryIds,
             });
@@ -207,10 +207,10 @@ export default class ArticleResolver {
     }
 
     @Mutation(() => ArticleMutationResponse)
-    @UseMiddleware(checkAuth)
+    @UseMiddleware(verifyToken)
     async updateArticle(
         @Arg('updateArticleInput') updateArticleInput: UpdateArticleInput,
-        @Ctx() { req }: IMyContext,
+        @Ctx() { user: { userId } }: IMyContext,
     ): Promise<ArticleMutationResponse> {
         try {
             const { id, description, title } = updateArticleInput;
@@ -228,7 +228,7 @@ export default class ArticleResolver {
                     message: 'Article not found',
                 };
 
-            if (existingArticle.userId !== req.session.userId) {
+            if (existingArticle.userId !== userId) {
                 return {
                     code: 401,
                     success: false,
@@ -251,10 +251,10 @@ export default class ArticleResolver {
     }
 
     @Mutation(() => ArticleMutationResponse)
-    @UseMiddleware(checkAuth)
+    @UseMiddleware(verifyToken)
     async deleteArticle(
         @Arg('deleteArticleInput') deleteArticleInput: DeleteArticleInput,
-        @Ctx() { req }: IMyContext,
+        @Ctx() { user: { userId } }: IMyContext,
     ): Promise<ArticleMutationResponse> {
         try {
             const { id } = deleteArticleInput;
@@ -272,7 +272,7 @@ export default class ArticleResolver {
                     message: 'Article not found',
                 };
 
-            if (existingArticle.userId !== req.session.userId) {
+            if (existingArticle.userId !== userId) {
                 return {
                     code: 401,
                     success: false,

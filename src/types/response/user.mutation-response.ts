@@ -13,4 +13,7 @@ export default class UserMutationResponse implements IMutationResponse {
 
     @Field(() => [FieldError], { nullable: true })
     errors?: FieldError[];
+
+    @Field({ nullable: true })
+    accessToken?: string;
 }

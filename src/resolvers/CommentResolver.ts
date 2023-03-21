@@ -12,7 +12,7 @@ import {
 import { FindManyOptions, LessThan } from 'typeorm';
 
 import { Article, Comment, User } from '../entities';
-import { checkAuth } from '../middleware';
+import { checkAuth } from '../middleware/session';
 import { IMyContext } from '../types';
 import { InsertCommentInput, UpdateCommentInput } from '../types/input';
 import { PaginatedComments } from '../types/pagination.type';

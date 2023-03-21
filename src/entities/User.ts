@@ -68,4 +68,7 @@ export default class User extends BaseEntity {
     @Field()
     @UpdateDateColumn()
     updatedDate: Date;
+
+    @Column({ default: 0 })
+    tokenVersion: number;
 }

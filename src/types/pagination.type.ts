@@ -28,8 +28,6 @@ export class PaginatedComments extends Paginated {
     paginatedComments!: Comment[];
 }
 
-// articles pagination
-
 @ObjectType()
 class Pagination {
     @Field(() => Number || String)
