@@ -9,8 +9,7 @@ export type roleAuth = {
 
 export interface IMyContext {
     req: Request & {
-        session: Session &
-            Partial<SessionData> & { userId?: string; roles: roleAuth[] };
+        session: Session & Partial<SessionData> & { userId?: string };
     };
     res: Response;
     dataLoaders: ReturnType<typeof buildDataLoaders>;

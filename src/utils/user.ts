@@ -1,12 +1,12 @@
-import { Role, User } from '../entities';
+import { Role } from '../entities';
 
-export const findRoles = async (user: User) => {
+export const findRoles = async (userId: string) => {
     // find roles of user from database
     const roles = await Role.find({
         relations: ['users'],
         where: {
             users: {
-                userId: user.id,
+                userId: userId,
             },
         },
     });
