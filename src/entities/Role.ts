@@ -12,7 +12,7 @@ import UserRole from './UserRole';
 
 @ObjectType()
 @Entity('roles')
-export default class Permission extends BaseEntity {
+export default class Role extends BaseEntity {
     @Field((_type) => ID)
     @PrimaryGeneratedColumn('uuid')
     id!: string;

@@ -1,17 +1,19 @@
+import * as argon2 from 'argon2';
 import {
     Arg,
     Ctx,
-    FieldResolver,
     Mutation,
     Query,
     Resolver,
-    Root,
     UseMiddleware,
 } from 'type-graphql';
-import * as argon2 from 'argon2';
 import { v4 as uuidv4 } from 'uuid';
 
+import { COOKIE_NAME, USER_ROLES } from '../constants';
 import { Role, User, UserRole } from '../entities';
+import { checkAlreadyLogin, checkAuth } from '../middleware/session';
+import { TokenModel } from '../models';
+import { IMyContext } from '../types/context';
 import {
     ChangePasswordInput,
     ChangePasswordLoggedInput,
@@ -21,24 +23,15 @@ import {
     UpdateProfileInput,
 } from '../types/input';
 import { UserMutationResponse } from '../types/response';
+import { sendEmail, showError } from '../utils';
 import {
-    validateChangePasswordLoggedInput,
     validateChangePasswordInput,
+    validateChangePasswordLoggedInput,
     validateRegisterInput,
 } from '../validations';
-import { IMyContext } from '../types/context';
-import { COOKIE_NAME, roles } from '../constants';
-import { checkAuth, checkAlreadyLogin } from '../middleware/session';
-import { TokenModel } from '../models';
-import { sendEmail, showError } from '../utils';
 
 @Resolver(() => User)
 export default class UserResolver {
-    @FieldResolver((_return) => String)
-    email(@Root() user: User, @Ctx() { req }: IMyContext) {
-        return req.session.userId === user.id ? user.email : '';
-    }
-
     @Query(() => User, { nullable: true })
     async me(@Ctx() { req }: IMyContext): Promise<User | undefined | null> {
         const userId = req.session.userId;
@@ -119,7 +112,9 @@ export default class UserResolver {
             });
 
             const savedUser = await newUser.save();
-            const role = await Role.findOne({ where: { name: roles.USER } });
+            const role = await Role.findOne({
+                where: { name: USER_ROLES.USER },
+            });
 
             await UserRole.create({
                 userId: savedUser.id,
@@ -262,6 +257,111 @@ export default class UserResolver {
                         },
                     ],
                 };
+            }
+
+            req.session.userId = existingUser.id;
+
+            return {
+                code: 200,
+                success: true,
+                message: 'Logged in successfully',
+                user: existingUser,
+            };
+        } catch (error) {
+            return showError(error);
+        }
+    }
+
+    @Mutation(() => UserMutationResponse)
+    @UseMiddleware(checkAlreadyLogin)
+    async loginDashboardAdmin(
+        @Arg('loginInput') loginInput: LoginInput,
+        @Ctx() { req, dataLoaders: { roleLoader } }: IMyContext,
+    ): Promise<UserMutationResponse> {
+        try {
+            const { usernameOrEmail, password } = loginInput;
+            const emailRegex =
+                /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/g;
+            let existingUser;
+
+            if (emailRegex.test(usernameOrEmail)) {
+                existingUser = await User.findOne({
+                    where: {
+                        email: usernameOrEmail,
+                    },
+                });
+            } else {
+                existingUser = await User.findOne({
+                    where: {
+                        username: usernameOrEmail,
+                    },
+                });
+            }
+
+            if (!existingUser) {
+                return {
+                    code: 400,
+                    success: false,
+                    message:
+                        'Account does not exist, username or email maybe wrong',
+                    errors: [
+                        {
+                            field: 'usernameOrEmail',
+                            message: 'Account does not exist',
+                        },
+                    ],
+                };
+            }
+
+            const isValidPassword = await argon2.verify(
+                existingUser.password,
+                password,
+            );
+
+            if (!isValidPassword) {
+                return {
+                    code: 400,
+                    success: false,
+                    message: 'Wrong password',
+                    errors: [
+                        {
+                            field: 'password',
+                            message: 'Wrong password',
+                        },
+                    ],
+                };
+            }
+
+            // get all role by UserRole table and validate
+            const userRoles = await UserRole.find({
+                where: {
+                    userId: existingUser.id,
+                },
+            });
+
+            const roleIds = userRoles.map((userRole) => userRole.roleId);
+
+            const roles = await Promise.all(
+                roleIds.map((roleId) => {
+                    async function getRole() {
+                        return await roleLoader.load(roleId);
+                    }
+                    return getRole();
+                }),
+            );
+
+            if (roles.length > 0) {
+                const isAdmin = (roles as Role[]).some(
+                    (role) => role.name === USER_ROLES.ADMIN,
+                );
+
+                if (!isAdmin) {
+                    return {
+                        code: 403,
+                        success: false,
+                        message: 'You are not admin',
+                    };
+                }
             }
 
             req.session.userId = existingUser.id;
