@@ -34,11 +34,6 @@ import { sendEmail, showError } from '../utils';
 
 @Resolver(() => User)
 export default class UserResolver {
-    @FieldResolver((_return) => String)
-    email(@Root() user: User, @Ctx() { req }: IMyContext) {
-        return req.session.userId === user.id ? user.email : '';
-    }
-
     @Query(() => User, { nullable: true })
     async me(@Ctx() { req }: IMyContext): Promise<User | undefined | null> {
         const userId = req.session.userId;
@@ -506,5 +501,10 @@ export default class UserResolver {
         }
     }
 
+    @Query(() => [User] || null)
+    async getAllUser(): Promise<User[] | null> {
+        const users = await User.find();
+        return users;
+    }
     // delete user
 }
