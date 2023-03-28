@@ -3,9 +3,9 @@ const COLLECTION_SESSION_NAME = 'sessions';
 const COOKIE_MAX_AGE = 1000 * 60 * 60; // 60 minutes
 const COOKIE_NAME = 'second-chance-cookie';
 const __prod__ = process.env.NODE_ENV === 'production';
-const roles = {
-    ADMIN: 'ADMIN',
-    USER: 'USER',
+const USER_ROLES = {
+    ADMIN: 'admin',
+    USER: 'user',
 };
 
 export {
@@ -13,5 +13,5 @@ export {
     COOKIE_MAX_AGE,
     __prod__,
     COOKIE_NAME,
-    roles,
+    USER_ROLES,
 };
