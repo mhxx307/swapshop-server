@@ -9,6 +9,7 @@ import {
     OneToMany,
 } from 'typeorm';
 import { Article, Comment, UserRole } from '.';
+import { STATUS_USER } from '../constants/user';
 
 @ObjectType()
 @Entity('users')
@@ -61,6 +62,12 @@ export default class User extends BaseEntity {
 
     @OneToMany(() => Comment, (comment) => comment.user)
     comments: Comment[];
+
+    @Field()
+    @Column({
+        default: STATUS_USER.ACTIVE,
+    })
+    status: string;
 
     @Field()
     @CreateDateColumn()

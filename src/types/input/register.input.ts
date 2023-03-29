@@ -21,8 +21,5 @@ export default class RegisterInput {
     fullName: string;
 
     @Field({ nullable: true })
-    avatar: string;
-
-    @Field({ nullable: true })
     birthday: string;
 }

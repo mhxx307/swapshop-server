@@ -1,3 +1,4 @@
+import { STATUS_USER } from './../constants/user';
 import * as argon2 from 'argon2';
 import {
     Arg,
@@ -13,7 +14,11 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { COOKIE_NAME, USER_ROLES } from '../constants';
 import { Role, User, UserRole } from '../entities';
-import { checkAlreadyLogin, checkAuth } from '../middleware/session';
+import {
+    checkAdmin,
+    checkAlreadyLogin,
+    checkAuth,
+} from '../middleware/session';
 import { TokenModel } from '../models';
 import { IMyContext } from '../types/context';
 import {
@@ -73,7 +78,6 @@ export default class UserResolver {
                 email,
                 address,
                 phoneNumber,
-                avatar,
                 birthday,
                 fullName,
             } = registerInput;
@@ -117,7 +121,6 @@ export default class UserResolver {
                 address,
                 phoneNumber,
                 fullName,
-                avatar,
                 birthday,
             });
 
@@ -264,6 +267,20 @@ export default class UserResolver {
                         {
                             field: 'password',
                             message: 'Wrong password',
+                        },
+                    ],
+                };
+            }
+
+            if (existingUser.status === STATUS_USER.BLOCKED) {
+                return {
+                    code: 400,
+                    success: false,
+                    message: 'Your account is blocked',
+                    errors: [
+                        {
+                            field: 'status',
+                            message: 'Your account is blocked',
                         },
                     ],
                 };
@@ -683,6 +700,33 @@ export default class UserResolver {
             code: 200,
             success: true,
             message: 'User deleted successfully',
+        };
+    }
+
+    @Mutation(() => UserMutationResponse)
+    @UseMiddleware(checkAuth, checkAdmin)
+    async changeStatusUser(
+        @Arg('userId') userId: string,
+        @Arg('status') status: string,
+    ): Promise<UserMutationResponse> {
+        const user = await User.findOne({ where: { id: userId } });
+
+        if (!user) {
+            return {
+                code: 400,
+                success: false,
+                message: 'User no longer exists',
+                errors: [{ field: 'user', message: 'User no longer exists' }],
+            };
+        }
+
+        user.status = status;
+
+        return {
+            code: 200,
+            success: true,
+            message: 'User status successfully',
+            user: await user.save(),
         };
     }
 }
