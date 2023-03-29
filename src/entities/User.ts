@@ -52,6 +52,7 @@ export default class User extends BaseEntity {
     @Column({ nullable: true, default: 0 })
     rating: number;
 
+    @Field(() => [UserRole])
     @OneToMany(() => UserRole, (ur) => ur.user)
     roles: UserRole[];
 

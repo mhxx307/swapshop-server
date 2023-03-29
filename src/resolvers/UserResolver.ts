@@ -2,9 +2,11 @@ import * as argon2 from 'argon2';
 import {
     Arg,
     Ctx,
+    FieldResolver,
     Mutation,
     Query,
     Resolver,
+    Root,
     UseMiddleware,
 } from 'type-graphql';
 import { v4 as uuidv4 } from 'uuid';
@@ -32,6 +34,14 @@ import {
 
 @Resolver(() => User)
 export default class UserResolver {
+    @FieldResolver(() => [UserRole])
+    async roles(@Root() root: User) {
+        return await UserRole.find({
+            where: { userId: root.id },
+            relations: ['role'],
+        });
+    }
+
     @Query(() => User, { nullable: true })
     async me(@Ctx() { req }: IMyContext): Promise<User | undefined | null> {
         const userId = req.session.userId;
@@ -611,5 +621,68 @@ export default class UserResolver {
         const users = await User.find();
         return users;
     }
-    // delete user
+
+    @Mutation(() => UserMutationResponse)
+    @UseMiddleware(checkAuth)
+    async ratingUser(
+        @Arg('userId') userId: string,
+        @Arg('ratingNumber') ratingNumber: number,
+    ): Promise<UserMutationResponse> {
+        const user = await User.findOne({ where: { id: userId } });
+
+        if (!user) {
+            return {
+                code: 400,
+                success: false,
+                message: 'User no longer exists',
+                errors: [{ field: 'user', message: 'User no longer exists' }],
+            };
+        }
+
+        user.rating = ratingNumber;
+
+        return {
+            code: 200,
+            success: true,
+            message: 'User rating successfully',
+            user: await user.save(),
+        };
+    }
+
+    @Mutation(() => UserMutationResponse)
+    @UseMiddleware(checkAuth)
+    async deleteUser(
+        @Arg('userId') userId: string,
+        @Ctx() { req }: IMyContext,
+    ): Promise<UserMutationResponse> {
+        const user = await User.findOne({ where: { id: userId } });
+
+        if (!user) {
+            return {
+                code: 400,
+                success: false,
+                message: 'User no longer exists',
+                errors: [{ field: 'user', message: 'User no longer exists' }],
+            };
+        }
+
+        if (user.id === req.session.userId) {
+            return {
+                code: 400,
+                success: false,
+                message: 'You can not delete this user',
+                errors: [
+                    { field: 'user', message: 'You can not delete this user' },
+                ],
+            };
+        }
+
+        await user.remove();
+
+        return {
+            code: 200,
+            success: true,
+            message: 'User deleted successfully',
+        };
+    }
 }
