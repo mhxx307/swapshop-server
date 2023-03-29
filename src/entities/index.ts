@@ -6,3 +6,4 @@ export { default as Message } from './Message';
 export { default as Article } from './Article';
 export { default as Role } from './Role';
 export { default as UserRole } from './UserRole';
+export { default as Favorite } from './Favorite';

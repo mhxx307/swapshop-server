@@ -16,7 +16,15 @@ import mongoose from 'mongoose';
 import session from 'express-session';
 const MongoDBStore = require('connect-mongodb-session')(session);
 
-import { Article, User, Comment, Category, Role, UserRole } from './entities';
+import {
+    Article,
+    User,
+    Comment,
+    Category,
+    Role,
+    UserRole,
+    Favorite,
+} from './entities';
 import {
     UserResolver,
     ArticleResolver,
@@ -24,6 +32,7 @@ import {
     CategoryResolver,
     RoleResolver,
     UserRoleResolver,
+    FavoriteResolver,
 } from './resolvers';
 import {
     COOKIE_MAX_AGE,
@@ -56,7 +65,7 @@ const main = async () => {
         database: process.env.DATABASE_NAME,
         logging: true,
         synchronize: true,
-        entities: [User, Comment, Article, Category, Role, UserRole],
+        entities: [User, Comment, Article, Category, Role, UserRole, Favorite],
     });
 
     PostgresDataSource.initialize()
@@ -126,6 +135,7 @@ const main = async () => {
                 CategoryResolver,
                 RoleResolver,
                 UserRoleResolver,
+                FavoriteResolver,
             ],
             validate: false,
         }),

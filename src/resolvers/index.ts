@@ -4,3 +4,4 @@ export { default as CommentResolver } from './CommentResolver';
 export { default as CategoryResolver } from './CategoryResolver';
 export { default as RoleResolver } from './RoleResolver';
 export { default as UserRoleResolver } from './UserRoleResolver';
+export { default as FavoriteResolver } from './FavoriteResolver';
