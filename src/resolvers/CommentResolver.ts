@@ -197,7 +197,7 @@ export default class CommentResolver {
             return {
                 code: 200,
                 success: true,
-                message: 'Delete successfully',
+                message: 'Update successfully',
                 comment: await existingComment.save(),
             };
         } catch (error) {
