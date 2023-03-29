@@ -1,3 +1,4 @@
+import { STATUS_ARTICLE } from './../constants/article';
 import { Field, ID, ObjectType } from 'type-graphql';
 import {
     BaseEntity,
@@ -61,6 +62,12 @@ export default class Article extends BaseEntity {
 
     @OneToMany(() => Comment, (comment) => comment.article)
     comments: Comment[];
+
+    @Field()
+    @Column({
+        default: STATUS_ARTICLE.ACTIVE,
+    })
+    status: string;
 
     @Field()
     @CreateDateColumn({ type: 'timestamptz' })

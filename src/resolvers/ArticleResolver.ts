@@ -24,10 +24,10 @@ import {
 } from '../types/input';
 import { Article, Category, User } from '../entities';
 import { IMyContext } from '../types/context';
-import { checkAuth } from '../middleware/session';
+import { checkAdmin, checkAuth } from '../middleware/session';
 import { showError } from '../utils';
 import { QueryConfig, ResponseSuccess } from '../types/pagination';
-import { ORDER, SORT_BY } from '../constants/product';
+import { ORDER, SORT_BY } from '../constants/article';
 
 @Resolver(() => Article)
 export default class ArticleResolver {
@@ -100,6 +100,7 @@ export default class ArticleResolver {
                 price_max,
                 price_min,
                 page = 1,
+                userId,
             } = queryConfig;
 
             let { order_by, sort_by } = queryConfig;
@@ -128,6 +129,12 @@ export default class ArticleResolver {
             if (isFree) {
                 findOptions.where = {
                     price: null,
+                };
+            }
+
+            if (userId) {
+                findOptions.where = {
+                    userId,
                 };
             }
 
@@ -290,5 +297,34 @@ export default class ArticleResolver {
         } catch (error) {
             return showError(error);
         }
+    }
+
+    @Mutation(() => ArticleMutationResponse)
+    @UseMiddleware(checkAuth, checkAdmin)
+    async changeStatusArticle(
+        @Arg('articleId') articleId: string,
+        @Arg('status') status: string,
+    ): Promise<ArticleMutationResponse> {
+        const article = await Article.findOne({ where: { id: articleId } });
+
+        if (!article) {
+            return {
+                code: 400,
+                success: false,
+                message: 'article no longer exists',
+                errors: [
+                    { field: 'article', message: 'article no longer exists' },
+                ],
+            };
+        }
+
+        article.status = status;
+
+        return {
+            code: 200,
+            success: true,
+            message: 'User status successfully',
+            article: await article.save(),
+        };
     }
 }

@@ -15,7 +15,7 @@ import { Article, Comment, User } from '../entities';
 import { checkAuth } from '../middleware/session';
 import { IMyContext } from '../types/context';
 import { InsertCommentInput, UpdateCommentInput } from '../types/input';
-import { PaginatedComments } from '../types/pagination';
+import { PaginatedComments } from '../types/paginationCursor';
 import { CommentMutationResponse } from '../types/response';
 import { hasMorePaginated, showError } from '../utils';
 
