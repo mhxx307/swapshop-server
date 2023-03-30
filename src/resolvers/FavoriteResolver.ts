@@ -72,7 +72,7 @@ export default class CommentResolver {
     @Mutation(() => FavoriteMutationResponse)
     @UseMiddleware(checkAuth)
     async removeFromFavorite(
-        @Arg('articleId', () => [String]) articleIds: string[],
+        @Arg('articleIds', () => [String]) articleIds: string[],
         @Ctx() { req }: IMyContext,
     ): Promise<FavoriteMutationResponse> {
         try {
@@ -104,6 +104,24 @@ export default class CommentResolver {
         } catch (error) {
             console.log(error);
             return null;
+        }
+    }
+
+    @Query(() => Boolean)
+    @UseMiddleware(checkAuth)
+    async isFavorite(
+        @Arg('articleId') articleId: string,
+        @Ctx() { req }: IMyContext,
+    ): Promise<boolean> {
+        try {
+            const favorite = await Favorite.findOne({
+                where: { articleId, userId: req.session.userId },
+            });
+
+            return !!favorite;
+        } catch (error) {
+            console.log(error);
+            return false;
         }
     }
 }

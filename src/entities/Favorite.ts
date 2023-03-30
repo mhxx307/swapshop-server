@@ -25,11 +25,11 @@ export default class Favorite extends BaseEntity {
     userId!: string;
 
     @Field(() => Article)
-    @ManyToOne(() => Article, (article) => article.comments)
+    @ManyToOne(() => Article, (article) => article.favorites)
     article: Article;
 
     @Field(() => User)
-    @ManyToOne(() => User, (user) => user.comments)
+    @ManyToOne(() => User, (user) => user.favorites)
     user: User;
 
     @Field()
