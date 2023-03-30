@@ -11,10 +11,5 @@ export const findRoles = async (userId: string) => {
         },
     });
 
-    const rolesAuth = roles.map((role) => ({
-        id: role.id,
-        name: role.name,
-    }));
-
-    return rolesAuth;
+    return roles;
 };

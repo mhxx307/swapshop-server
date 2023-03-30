@@ -1,34 +1,5 @@
 import { Field, ObjectType, InputType } from 'type-graphql';
-import { Article, Comment } from '../entities';
-
-@InputType()
-export default class ChangePasswordLoggedInput {
-    @Field()
-    newPassword: string;
-
-    @Field()
-    oldPassword: string;
-}
-
-@ObjectType()
-export class Paginated {
-    @Field()
-    totalCount!: number;
-
-    @Field((_type) => Date)
-    cursor!: Date;
-
-    @Field()
-    hasMore!: boolean;
-}
-
-@ObjectType()
-export class PaginatedComments extends Paginated {
-    @Field((_type) => [Comment])
-    paginatedComments!: Comment[];
-}
-
-// articles pagination
+import { Article } from '../entities';
 
 @ObjectType()
 class Pagination {
@@ -88,4 +59,7 @@ export class QueryConfig {
 
     @Field(() => String || Number, { nullable: true })
     page?: string | number;
+
+    @Field({ nullable: true })
+    userId?: string;
 }

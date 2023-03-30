@@ -8,7 +8,8 @@ import {
     BaseEntity,
     OneToMany,
 } from 'typeorm';
-import { Article, Comment, UserRole } from '.';
+import { Article, Comment, UserRole, Message } from '.';
+import { STATUS_USER } from '../constants/user';
 
 @ObjectType()
 @Entity('users')
@@ -52,6 +53,7 @@ export default class User extends BaseEntity {
     @Column({ nullable: true, default: 0 })
     rating: number;
 
+    @Field(() => [UserRole])
     @OneToMany(() => UserRole, (ur) => ur.user)
     roles: UserRole[];
 
@@ -60,6 +62,15 @@ export default class User extends BaseEntity {
 
     @OneToMany(() => Comment, (comment) => comment.user)
     comments: Comment[];
+
+    @OneToMany(() => Message, (message) => message.sender)
+    messages: Message[];
+
+    @Field()
+    @Column({
+        default: STATUS_USER.ACTIVE,
+    })
+    status: string;
 
     @Field()
     @CreateDateColumn()

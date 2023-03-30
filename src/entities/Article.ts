@@ -1,9 +1,11 @@
+import { STATUS_ARTICLE } from './../constants/article';
 import { Field, ID, ObjectType } from 'type-graphql';
 import {
     BaseEntity,
     Column,
     CreateDateColumn,
     Entity,
+    JoinTable,
     ManyToMany,
     ManyToOne,
     OneToMany,
@@ -48,8 +50,10 @@ export default class Article extends BaseEntity {
     @Column({ type: 'uuid', array: true })
     categoryIds!: string[];
 
+    // Co the bo manytoone va jointable nay cung duoc vi postgresql co ho tro luu array
     @Field(() => [Category])
     @ManyToMany(() => Category)
+    @JoinTable()
     categories: Category[];
 
     @Column()
@@ -61,6 +65,12 @@ export default class Article extends BaseEntity {
 
     @OneToMany(() => Comment, (comment) => comment.article)
     comments: Comment[];
+
+    @Field()
+    @Column({
+        default: STATUS_ARTICLE.ACTIVE,
+    })
+    status: string;
 
     @Field()
     @CreateDateColumn({ type: 'timestamptz' })
