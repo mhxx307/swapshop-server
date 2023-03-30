@@ -5,3 +5,5 @@ export { default as CategoryResolver } from './CategoryResolver';
 export { default as RoleResolver } from './RoleResolver';
 export { default as UserRoleResolver } from './UserRoleResolver';
 export { default as FavoriteResolver } from './FavoriteResolver';
+export { default as MessageResolver } from './MessageResolver';
+export { default as ConversationResolver } from './ConversationResolver';

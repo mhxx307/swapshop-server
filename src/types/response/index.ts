@@ -7,3 +7,5 @@ export { default as ArticleMutationResponse } from './article.mutation-response'
 export { default as RoleMutationResponse } from './role.mutation-response';
 export { default as UserRoleMutationResponse } from './user-role.mutation-response';
 export { default as FavoriteMutationResponse } from './favorite.mutation-response';
+export { default as ConversationMutationResponse } from './conversation.mutation-response';
+export { default as MessageMutationResponse } from './message.mutation-response';

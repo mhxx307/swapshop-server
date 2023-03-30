@@ -14,6 +14,7 @@ import { Article, Comment, User, Favorite } from '../entities';
 import { checkAuth } from '../middleware/session';
 import { IMyContext } from '../types/context';
 import { showError } from '../utils';
+import { In } from 'typeorm';
 
 @Resolver(() => Comment)
 export default class CommentResolver {
@@ -40,6 +41,18 @@ export default class CommentResolver {
         @Ctx() { req }: IMyContext,
     ): Promise<FavoriteMutationResponse> {
         try {
+            const existingFavorite = await Favorite.findOne({
+                where: { articleId, userId: req.session.userId },
+            });
+
+            if (existingFavorite) {
+                return {
+                    code: 400,
+                    success: false,
+                    message: 'Favorite already exists',
+                };
+            }
+
             const newFavorite = Favorite.create({
                 articleId,
                 userId: req.session.userId,
@@ -48,7 +61,7 @@ export default class CommentResolver {
             return {
                 code: 200,
                 success: true,
-                message: 'Comment created successfully',
+                message: 'Favorite created successfully',
                 favorite: await newFavorite.save(),
             };
         } catch (error) {
@@ -59,23 +72,14 @@ export default class CommentResolver {
     @Mutation(() => FavoriteMutationResponse)
     @UseMiddleware(checkAuth)
     async removeFromFavorite(
-        @Arg('articleId') articleId: string,
+        @Arg('articleId', () => [String]) articleIds: string[],
         @Ctx() { req }: IMyContext,
     ): Promise<FavoriteMutationResponse> {
         try {
-            const favorite = await Favorite.findOne({
-                where: { articleId, userId: req.session.userId },
+            await Favorite.delete({
+                articleId: In(articleIds),
+                userId: req.session.userId,
             });
-
-            if (!favorite) {
-                return {
-                    code: 400,
-                    success: false,
-                    message: 'Favorite not found',
-                };
-            }
-
-            await favorite.remove();
 
             return {
                 code: 200,

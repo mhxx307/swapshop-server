@@ -1,3 +1,4 @@
+import { STATUS_MESSAGE } from '../constants/message';
 import { Field, ID, ObjectType } from 'type-graphql';
 import {
     Entity,
@@ -15,18 +16,28 @@ import User from './User';
 export default class Message extends BaseEntity {
     @Field((_type) => ID)
     @PrimaryGeneratedColumn()
-    id!: number;
+    id!: string;
 
     @Field()
     @Column()
-    content!: string;
+    conversationId!: string;
+
+    @Column()
+    senderId!: string;
+
+    @Field(() => User)
+    @ManyToOne(() => User, (user) => user.messages)
+    sender: User;
+
+    @Field()
+    @Column({
+        default: STATUS_MESSAGE.pending,
+    })
+    status: string;
 
     @Field()
     @Column()
-    status!: string;
-
-    @ManyToOne(() => User)
-    user: User;
+    text!: string;
 
     @Field()
     @CreateDateColumn()

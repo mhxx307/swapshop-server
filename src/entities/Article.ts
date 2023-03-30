@@ -5,6 +5,7 @@ import {
     Column,
     CreateDateColumn,
     Entity,
+    JoinTable,
     ManyToMany,
     ManyToOne,
     OneToMany,
@@ -49,8 +50,10 @@ export default class Article extends BaseEntity {
     @Column({ type: 'uuid', array: true })
     categoryIds!: string[];
 
+    // Co the bo manytoone va jointable nay cung duoc vi postgresql co ho tro luu array
     @Field(() => [Category])
     @ManyToMany(() => Category)
+    @JoinTable()
     categories: Category[];
 
     @Column()
