@@ -633,6 +633,12 @@ export default class UserResolver {
         }
     }
 
+    @Query(() => User || null)
+    async getUserById(@Arg('userId') userId: string): Promise<User | null> {
+        const user = await User.findOne({ where: { id: userId } });
+        return user;
+    }
+
     @Query(() => [User] || null)
     async getAllUser(): Promise<User[] | null> {
         const users = await User.find();
