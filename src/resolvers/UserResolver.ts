@@ -735,4 +735,31 @@ export default class UserResolver {
             user: await user.save(),
         };
     }
+
+    @Mutation(() => UserMutationResponse)
+    @UseMiddleware(checkAuth)
+    async uploadAvatarProfile(
+        @Arg('imageUrl') imageUrl: string,
+        @Ctx() { req }: IMyContext,
+    ): Promise<UserMutationResponse> {
+        const user = await User.findOne({ where: { id: req.session.userId } });
+
+        if (!user) {
+            return {
+                code: 400,
+                success: false,
+                message: 'User no longer exists',
+                errors: [{ field: 'user', message: 'User no longer exists' }],
+            };
+        }
+
+        user.avatar = imageUrl;
+
+        return {
+            code: 200,
+            success: true,
+            message: 'Updated user avatar successfully',
+            user: await user.save(),
+        };
+    }
 }
