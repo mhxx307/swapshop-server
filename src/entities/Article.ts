@@ -15,6 +15,7 @@ import {
 import User from './User';
 import Comment from './Comment';
 import Category from './Category';
+import Favorite from './Favorite';
 
 @ObjectType()
 @Entity('articles')
@@ -65,6 +66,9 @@ export default class Article extends BaseEntity {
 
     @OneToMany(() => Comment, (comment) => comment.article)
     comments: Comment[];
+
+    @OneToMany(() => Favorite, (favorite) => favorite.article)
+    favorites: Favorite[];
 
     @Field()
     @Column({

@@ -8,7 +8,7 @@ import {
     BaseEntity,
     OneToMany,
 } from 'typeorm';
-import { Article, Comment, UserRole, Message } from '.';
+import { Article, Comment, UserRole, Message, Favorite } from '.';
 import { STATUS_USER } from '../constants/user';
 
 @ObjectType()
@@ -65,6 +65,9 @@ export default class User extends BaseEntity {
 
     @OneToMany(() => Message, (message) => message.sender)
     messages: Message[];
+
+    @OneToMany(() => Favorite, (favorite) => favorite.user)
+    favorites: Favorite[];
 
     @Field()
     @Column({
