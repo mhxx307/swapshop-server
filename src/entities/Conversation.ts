@@ -6,8 +6,7 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
     BaseEntity,
-    ManyToMany,
-    JoinTable,
+    ManyToOne,
 } from 'typeorm';
 import User from './User';
 
@@ -15,17 +14,22 @@ import User from './User';
 @Entity('conversations')
 export default class Conversation extends BaseEntity {
     @Field((_type) => ID)
-    @PrimaryGeneratedColumn()
+    @PrimaryGeneratedColumn('uuid')
     id!: string;
 
-    @Column({ type: 'uuid', array: true })
-    memberIds!: string[];
+    @Column({ type: 'uuid' })
+    member1Id!: string;
 
-    // Co the bo manytoone va jointable nay cung duoc vi postgresql co ho tro luu array
-    @Field(() => [User])
-    @ManyToMany(() => User)
-    @JoinTable()
-    members: User[];
+    @Field(() => User)
+    @ManyToOne(() => User, (user) => user.conversations1)
+    member1: User;
+
+    @Column({ type: 'uuid' })
+    member2Id!: string;
+
+    @Field(() => User)
+    @ManyToOne(() => User, (user) => user.conversations2)
+    member2: User;
 
     @Field()
     @CreateDateColumn()

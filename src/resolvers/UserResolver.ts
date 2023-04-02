@@ -36,6 +36,7 @@ import {
     validateChangePasswordLoggedInput,
     validateRegisterInput,
 } from '../validations';
+import { Like } from 'typeorm';
 
 @Resolver(() => User)
 export default class UserResolver {
@@ -633,13 +634,27 @@ export default class UserResolver {
         }
     }
 
-    @Query(() => User || null)
+    @Query(() => User, { nullable: true })
     async getUserById(@Arg('userId') userId: string): Promise<User | null> {
         const user = await User.findOne({ where: { id: userId } });
         return user;
     }
 
-    @Query(() => [User] || null)
+    @Query(() => [User], { nullable: true })
+    async getUsersByName(
+        @Arg('name') name: string,
+        @Ctx() { req }: IMyContext,
+    ): Promise<User[] | null> {
+        const users = await User.find({
+            where: { username: Like(`%${name}%`) },
+        });
+        const usersExceptMe = users.filter(
+            (user) => user.id !== req.session.userId,
+        );
+        return usersExceptMe;
+    }
+
+    @Query(() => [User], { nullable: true })
     async getAllUser(): Promise<User[] | null> {
         const users = await User.find();
         return users;

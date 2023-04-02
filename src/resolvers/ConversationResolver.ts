@@ -1,4 +1,4 @@
-import { Conversation, User } from '../entities';
+import { User, Conversation } from '../entities';
 import {
     Arg,
     Ctx,
@@ -13,16 +13,23 @@ import {
 import { IMyContext } from '../types/context';
 import { ConversationMutationResponse } from '../types/response';
 import { checkAuth } from '../middleware/session';
-import { In } from 'typeorm';
 
 @Resolver(() => Conversation)
 export default class ConversationResolver {
     @FieldResolver(() => [User])
-    async members(
+    async member1(
         @Root() root: Conversation,
         @Ctx() { dataLoaders: { userLoader } }: IMyContext,
     ) {
-        return root.memberIds.map(async (id) => await userLoader.load(id));
+        return await userLoader.load(root.member1Id);
+    }
+
+    @FieldResolver(() => [User])
+    async member2(
+        @Root() root: Conversation,
+        @Ctx() { dataLoaders: { userLoader } }: IMyContext,
+    ) {
+        return await userLoader.load(root.member2Id);
     }
 
     @Mutation(() => ConversationMutationResponse)
@@ -40,29 +47,25 @@ export default class ConversationResolver {
                 };
             }
 
-            const memberIds = [req.session.userId as string, userId];
+            const existConversation = await Conversation.findOne({
+                where: [
+                    { member1Id: req.session.userId, member2Id: userId },
+                    { member1Id: userId, member2Id: req.session.userId },
+                ],
+            });
 
-            if (memberIds.length > 0) {
-                const members = memberIds.map((member) => [member]);
-
-                const existConversation = await Conversation.findOne({
-                    where: {
-                        memberIds: In(members),
-                    },
-                });
-
-                if (existConversation) {
-                    return {
-                        code: 200,
-                        success: true,
-                        message: 'Conversation already exist',
-                        conversation: existConversation,
-                    };
-                }
+            if (existConversation) {
+                return {
+                    code: 200,
+                    success: true,
+                    message: 'Conversation already exist',
+                    conversation: existConversation,
+                };
             }
 
             const newConversation = Conversation.create({
-                memberIds,
+                member1Id: req.session.userId,
+                member2Id: userId,
             });
 
             return {
@@ -81,16 +84,17 @@ export default class ConversationResolver {
     }
 
     //get conv of a user
-    @Query(() => [Conversation])
+    @Query(() => [Conversation], { nullable: true })
     @UseMiddleware(checkAuth)
     async getConversations(
         @Ctx() { req }: IMyContext,
     ): Promise<Conversation[] | null> {
         try {
             const conversations = await Conversation.find({
-                where: {
-                    memberIds: In([req.session.userId as string]),
-                },
+                where: [
+                    { member1Id: req.session.userId },
+                    { member2Id: req.session.userId },
+                ],
             });
 
             return conversations;
@@ -107,10 +111,12 @@ export default class ConversationResolver {
         @Ctx() { req }: IMyContext,
     ): Promise<Conversation | null> {
         try {
+            // getConversation between two users
             const conversation = await Conversation.findOne({
-                where: {
-                    memberIds: In([[req.session.userId as string, userId]]),
-                },
+                where: [
+                    { member1Id: req.session.userId, member2Id: userId },
+                    { member1Id: userId, member2Id: req.session.userId },
+                ],
             });
 
             return conversation || null;
