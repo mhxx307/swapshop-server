@@ -195,11 +195,13 @@ export default class ArticleResolver {
     }
 
     @Query(() => Article, { nullable: true })
-    async article(@Arg('id') id: string): Promise<Article | null> {
+    async article(
+        @Arg('articleId') articleId: string,
+    ): Promise<Article | null> {
         try {
             const article = await Article.findOne({
                 where: {
-                    id,
+                    id: articleId,
                 },
             });
             return article;
@@ -220,7 +222,16 @@ export default class ArticleResolver {
         @Ctx() { req }: IMyContext,
     ): Promise<ArticleMutationResponse> {
         try {
-            const { id, description, title } = updateArticleInput;
+            const {
+                id,
+                description,
+                title,
+                categoryIds,
+                images,
+                price,
+                productName,
+                status,
+            } = updateArticleInput;
 
             const existingArticle = await Article.findOne({
                 where: {
@@ -243,8 +254,13 @@ export default class ArticleResolver {
                 };
             }
 
-            existingArticle.description = description;
             existingArticle.title = title;
+            existingArticle.images = images;
+            existingArticle.price = price;
+            existingArticle.productName = productName;
+            existingArticle.categoryIds = categoryIds;
+            existingArticle.description = description;
+            existingArticle.status = status;
 
             return {
                 code: 200,
