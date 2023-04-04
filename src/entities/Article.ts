@@ -72,7 +72,7 @@ export default class Article extends BaseEntity {
 
     @Field()
     @Column({
-        default: STATUS_ARTICLE.ACTIVE,
+        default: STATUS_ARTICLE.PENDING,
     })
     status: string;
 
