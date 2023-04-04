@@ -1,32 +1,29 @@
+import { expressMiddleware } from '@apollo/server/express4';
+import { ApolloServer } from '@apollo/server';
 /* eslint-disable @typescript-eslint/no-var-requires */
-require('dotenv').config();
 import 'reflect-metadata';
+require('dotenv').config();
 import { buildDataLoaders } from './utils/dataLoaders';
 import express from 'express';
 import cors from 'cors';
-import { DataSource } from 'typeorm';
-import { expressMiddleware } from '@apollo/server/express4';
-import { ApolloServer } from '@apollo/server';
-import {
-    ApolloServerPluginLandingPageLocalDefault,
-    ApolloServerPluginLandingPageProductionDefault,
-} from '@apollo/server/plugin/landingPage/default';
 import { buildSchema } from 'type-graphql';
 import mongoose from 'mongoose';
 import session from 'express-session';
 const MongoDBStore = require('connect-mongodb-session')(session);
 
+import path from 'path';
 import {
     Article,
-    User,
-    Comment,
     Category,
-    Role,
-    UserRole,
+    Comment,
+    Conversation,
     Favorite,
     Message,
-    Conversation,
+    Role,
+    User,
+    UserRole,
 } from './entities';
+
 import {
     UserResolver,
     ArticleResolver,
@@ -45,6 +42,8 @@ import {
     COOKIE_NAME,
 } from './constants';
 import { IMyContext } from './types/context';
+import { createConnection } from 'typeorm';
+// import PostgresDataSource from './data-source';
 
 const main = async () => {
     const app = express();
@@ -59,16 +58,27 @@ const main = async () => {
         }),
     );
 
-    // postgres connection
-    const PostgresDataSource = new DataSource({
+    const connection = await createConnection({
         type: 'postgres',
-        host: 'localhost',
-        port: 5432,
-        username: process.env.USERNAME_DB_DEV,
-        password: process.env.PASSWORD_DB_DEV,
-        database: process.env.DATABASE_NAME,
+        ...(__prod__
+            ? { url: process.env.DATABASE_URL }
+            : {
+                  database: process.env.DATABASE_NAME,
+                  username: process.env.USERNAME_DB_DEV,
+                  password: process.env.PASSWORD_DB_DEV,
+              }),
         logging: true,
-        synchronize: true,
+        ...(__prod__
+            ? {
+                  extra: {
+                      ssl: {
+                          rejectUnauthorized: false,
+                      },
+                  },
+                  ssl: true,
+              }
+            : {}),
+        ...(__prod__ ? {} : { synchronize: true }),
         entities: [
             User,
             Comment,
@@ -80,15 +90,18 @@ const main = async () => {
             Message,
             Conversation,
         ],
+        migrations: [path.join(__dirname, '/migrations/*')],
     });
 
-    PostgresDataSource.initialize()
-        .then(() => {
-            console.log('Data Source has been initialized!');
-        })
-        .catch((err) => {
-            console.error('Error during Data Source initialization', err);
-        });
+    if (__prod__) await connection.runMigrations();
+
+    // PostgresDataSource.initialize()
+    //     .then(() => {
+    //         console.log('Data Source has been initialized!');
+    //     })
+    //     .catch((err) => {
+    //         console.error('Error during Data Source initialization', err);
+    //     });
 
     // Session/Cookie store
     const mongoUrl = process.env.MONGO_CONNECTION_URL_DEV_PROD as string;
@@ -155,15 +168,15 @@ const main = async () => {
             ],
             validate: false,
         }),
-        plugins: [
-            __prod__
-                ? ApolloServerPluginLandingPageProductionDefault({
-                      includeCookies: true,
-                  })
-                : ApolloServerPluginLandingPageLocalDefault({
-                      includeCookies: true,
-                  }),
-        ],
+        // plugins: [
+        //     __prod__
+        //         ? ApolloServerPluginLandingPageProductionDefault({
+        //               includeCookies: true,
+        //           })
+        //         : ApolloServerPluginLandingPageLocalDefault({
+        //               includeCookies: true,
+        //           }),
+        // ],
     });
     await server.start();
 

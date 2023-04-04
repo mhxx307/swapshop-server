@@ -195,7 +195,7 @@ export default class ArticleResolver {
     }
 
     @Query(() => Article, { nullable: true })
-    async article(@Arg('id') id: string): Promise<Article | null> {
+    async article(@Arg('id') id: string): Promise<Article | null | undefined> {
         try {
             const article = await Article.findOne({
                 where: {

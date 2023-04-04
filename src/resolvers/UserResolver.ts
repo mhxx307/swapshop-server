@@ -635,7 +635,9 @@ export default class UserResolver {
     }
 
     @Query(() => User, { nullable: true })
-    async getUserById(@Arg('userId') userId: string): Promise<User | null> {
+    async getUserById(
+        @Arg('userId') userId: string,
+    ): Promise<User | null | undefined> {
         const user = await User.findOne({ where: { id: userId } });
         return user;
     }
