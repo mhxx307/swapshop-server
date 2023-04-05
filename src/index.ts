@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-require('dotenv').config();
 import 'reflect-metadata';
+require('dotenv').config();
 import { buildDataLoaders } from './utils/dataLoaders';
 import express from 'express';
 import cors from 'cors';
-import { DataSource } from 'typeorm';
 import { expressMiddleware } from '@apollo/server/express4';
 import { ApolloServer } from '@apollo/server';
 import {
@@ -16,17 +15,6 @@ import mongoose from 'mongoose';
 import session from 'express-session';
 const MongoDBStore = require('connect-mongodb-session')(session);
 
-import {
-    Article,
-    User,
-    Comment,
-    Category,
-    Role,
-    UserRole,
-    Favorite,
-    Message,
-    Conversation,
-} from './entities';
 import {
     UserResolver,
     ArticleResolver,
@@ -45,42 +33,27 @@ import {
     COOKIE_NAME,
 } from './constants';
 import { IMyContext } from './types/context';
+import PostgresDataSource from './datasource';
 
 const main = async () => {
     const app = express();
 
     app.use(
         cors({
-            origin: [
-                process.env.WEBSITE_URL_DEV as string,
-                process.env.ADMIN_URL_DEV as string,
-            ],
+            origin: __prod__
+                ? [
+                      process.env.WEBSITE_URL_PROD as string,
+                      process.env.ADMIN_URL_PROD as string,
+                  ]
+                : [
+                      process.env.WEBSITE_URL_DEV as string,
+                      process.env.ADMIN_URL_DEV as string,
+                  ],
             credentials: true,
         }),
     );
 
-    // postgres connection
-    const PostgresDataSource = new DataSource({
-        type: 'postgres',
-        host: 'localhost',
-        port: 5432,
-        username: process.env.USERNAME_DB_DEV,
-        password: process.env.PASSWORD_DB_DEV,
-        database: process.env.DATABASE_NAME,
-        logging: true,
-        synchronize: true,
-        entities: [
-            User,
-            Comment,
-            Article,
-            Category,
-            Role,
-            UserRole,
-            Favorite,
-            Message,
-            Conversation,
-        ],
-    });
+    if (__prod__) await PostgresDataSource.runMigrations();
 
     PostgresDataSource.initialize()
         .then(() => {
@@ -170,10 +143,15 @@ const main = async () => {
     app.use(
         '/graphql',
         cors({
-            origin: [
-                process.env.WEBSITE_URL_DEV as string,
-                process.env.ADMIN_URL_DEV as string,
-            ],
+            origin: __prod__
+                ? [
+                      process.env.WEBSITE_URL_PROD as string,
+                      process.env.ADMIN_URL_PROD as string,
+                  ]
+                : [
+                      process.env.WEBSITE_URL_DEV as string,
+                      process.env.ADMIN_URL_DEV as string,
+                  ],
             credentials: true,
         }),
         express.json(),
