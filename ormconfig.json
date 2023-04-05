@@ -3,7 +3,7 @@
     "host": "db.lliqjchhtottfkajbbrr.supabase.co",
     "port": 5432,
     "username": "postgres",
-    "password": "8OFWGZyEcYDQQY4Q",
+    "password": "zFDmwUfhL6gK346q",
     "database": "postgres",
     "entities": ["dist/entities/*.js"],
     "migrations": ["dist/migrations/*.js"]
