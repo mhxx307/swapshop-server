@@ -50,10 +50,15 @@ const main = async () => {
 
     app.use(
         cors({
-            origin: [
-                process.env.WEBSITE_URL_DEV as string,
-                process.env.ADMIN_URL_DEV as string,
-            ],
+            origin: __prod__
+                ? [
+                      process.env.WEBSITE_URL_PROD as string,
+                      process.env.ADMIN_URL_PROD as string,
+                  ]
+                : [
+                      process.env.WEBSITE_URL_DEV as string,
+                      process.env.ADMIN_URL_DEV as string,
+                  ],
             credentials: true,
         }),
     );
@@ -183,10 +188,15 @@ const main = async () => {
     app.use(
         '/graphql',
         cors({
-            origin: [
-                process.env.WEBSITE_URL_DEV as string,
-                process.env.ADMIN_URL_DEV as string,
-            ],
+            origin: __prod__
+                ? [
+                      process.env.WEBSITE_URL_PROD as string,
+                      process.env.ADMIN_URL_PROD as string,
+                  ]
+                : [
+                      process.env.WEBSITE_URL_DEV as string,
+                      process.env.ADMIN_URL_DEV as string,
+                  ],
             credentials: true,
         }),
         express.json(),
