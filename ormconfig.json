@@ -1,10 +1,10 @@
 {
     "type": "postgres",
-    "host": "localhost",
+    "host": "db.lliqjchhtottfkajbbrr.supabase.co",
     "port": 5432,
     "username": "postgres",
-    "password": "123456",
-    "database": "second_chance_for_migrations",
+    "password": "8OFWGZyEcYDQQY4Q",
+    "database": "postgres",
     "entities": ["dist/entities/*.js"],
     "migrations": ["dist/migrations/*.js"]
 }

@@ -66,11 +66,17 @@ const main = async () => {
     const connection = await createConnection({
         type: 'postgres',
         ...(__prod__
-            ? { url: process.env.DATABASE_URL }
-            : {
+            ? {
+                  url: process.env.DATABASE_URL,
                   database: process.env.DATABASE_NAME,
-                  username: process.env.USERNAME_DB_DEV,
-                  password: process.env.PASSWORD_DB_DEV,
+                  username: process.env.USERNAME_DB,
+                  password: process.env.PASSWORD_DB,
+                  host: process.env.HOST_DB,
+              }
+            : {
+                  database: 'second_chance_db',
+                  username: 'postgres',
+                  password: '123456',
               }),
         logging: true,
         ...(__prod__
@@ -96,6 +102,9 @@ const main = async () => {
             Conversation,
         ],
         migrations: [path.join(__dirname, '/migrations/*')],
+        cli: {
+            migrationsDir: 'src/migrations',
+        },
     });
 
     if (__prod__) await connection.runMigrations();
