@@ -4,6 +4,7 @@
     "description": "swapshop server for second chance ",
     "main": "index.js",
     "scripts": {
+        "build": "del dist && tsc",
         "start": "tsc-watch --synchronousWatchDirectory --onSuccess \"npm run start:dist\"",
         "start:dist": "node ./dist/index.js",
         "server": "nodemon dist/index.js",
