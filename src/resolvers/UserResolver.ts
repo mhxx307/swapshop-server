@@ -408,6 +408,7 @@ export default class UserResolver {
     @Mutation(() => Boolean)
     @UseMiddleware(checkAuth)
     async logout(@Ctx() { req, res }: IMyContext) {
+        console.log(req.session.userId);
         return new Promise((resolve) => {
             res.clearCookie(COOKIE_NAME);
             req.session.destroy((error) => {

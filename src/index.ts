@@ -10,6 +10,10 @@ import { buildSchema } from 'type-graphql';
 import mongoose from 'mongoose';
 import session from 'express-session';
 const MongoDBStore = require('connect-mongodb-session')(session);
+import {
+    ApolloServerPluginLandingPageLocalDefault,
+    ApolloServerPluginLandingPageProductionDefault,
+} from '@apollo/server/plugin/landingPage/default';
 
 import path from 'path';
 import {
@@ -182,15 +186,15 @@ const main = async () => {
             ],
             validate: false,
         }),
-        // plugins: [
-        //     __prod__
-        //         ? ApolloServerPluginLandingPageProductionDefault({
-        //               includeCookies: true,
-        //           })
-        //         : ApolloServerPluginLandingPageLocalDefault({
-        //               includeCookies: true,
-        //           }),
-        // ],
+        plugins: [
+            __prod__
+                ? ApolloServerPluginLandingPageProductionDefault({
+                      includeCookies: true,
+                  })
+                : ApolloServerPluginLandingPageLocalDefault({
+                      includeCookies: true,
+                  }),
+        ],
     });
     await server.start();
 

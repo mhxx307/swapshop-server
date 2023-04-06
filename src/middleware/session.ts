@@ -7,6 +7,7 @@ export const checkAuth: MiddlewareFn<IMyContext> = async (
     { context: { req } },
     next,
 ) => {
+    console.log(req.session.userId);
     if (!req.session.userId)
         throw new GraphQLError(
             'Not authenticated to perform GraphQL operations',
