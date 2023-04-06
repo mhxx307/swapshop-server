@@ -124,4 +124,20 @@ export default class CommentResolver {
             return false;
         }
     }
+
+    @Query(() => Number, { nullable: true })
+    async countFavoritesForArticle(
+        @Arg('articleId') articleId: string,
+    ): Promise<number | null> {
+        try {
+            const count = await Favorite.count({
+                where: { articleId },
+            });
+
+            return count;
+        } catch (error) {
+            console.log(error);
+            return null;
+        }
+    }
 }

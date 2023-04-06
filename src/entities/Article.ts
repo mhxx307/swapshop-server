@@ -77,6 +77,12 @@ export default class Article extends BaseEntity {
     status: string;
 
     @Field()
+    @Column({
+        default: 0,
+    })
+    views: number;
+
+    @Field()
     @CreateDateColumn({ type: 'timestamptz' })
     createdDate: Date;
 
