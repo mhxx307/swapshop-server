@@ -202,6 +202,11 @@ export default class ArticleResolver {
                     id,
                 },
             });
+            if (!article) {
+                return null;
+            }
+            article.views += 1;
+            await article.save();
             return article;
         } catch (error) {
             if (error instanceof Error) {
