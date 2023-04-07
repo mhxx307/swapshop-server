@@ -665,33 +665,6 @@ export default class UserResolver {
 
     @Mutation(() => UserMutationResponse)
     @UseMiddleware(checkAuth)
-    async ratingUser(
-        @Arg('userId') userId: string,
-        @Arg('ratingNumber') ratingNumber: number,
-    ): Promise<UserMutationResponse> {
-        const user = await User.findOne({ where: { id: userId } });
-
-        if (!user) {
-            return {
-                code: 400,
-                success: false,
-                message: 'User no longer exists',
-                errors: [{ field: 'user', message: 'User no longer exists' }],
-            };
-        }
-
-        user.rating = ratingNumber;
-
-        return {
-            code: 200,
-            success: true,
-            message: 'User rating successfully',
-            user: await user.save(),
-        };
-    }
-
-    @Mutation(() => UserMutationResponse)
-    @UseMiddleware(checkAuth)
     async deleteUser(
         @Arg('userId') userId: string,
         @Ctx() { req }: IMyContext,

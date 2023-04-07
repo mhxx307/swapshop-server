@@ -26,7 +26,10 @@ import { Article, Category, User } from '../entities';
 import { IMyContext } from '../types/context';
 import { checkAdmin, checkAuth } from '../middleware/session';
 import { showError } from '../utils';
-import { QueryConfig, ResponseSuccess } from '../types/pagination';
+import {
+    QueryConfig,
+    ArticleResponseSuccess,
+} from '../types/paginationArticle';
 import { ORDER, SORT_BY } from '../constants/article';
 
 @Resolver(() => Article)
@@ -87,10 +90,10 @@ export default class ArticleResolver {
         }
     }
 
-    @Query(() => ResponseSuccess)
+    @Query(() => ArticleResponseSuccess)
     async articles(
         @Arg('queryConfig') queryConfig: QueryConfig,
-    ): Promise<ResponseSuccess> {
+    ): Promise<ArticleResponseSuccess> {
         try {
             const {
                 limit,
