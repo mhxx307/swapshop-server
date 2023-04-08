@@ -1,4 +1,4 @@
-export const SORT_BY = ['createdDate', 'comments', 'price'];
+export const SORT_BY = ['createdDate', 'views', 'price', 'favoritesCount'];
 export const ORDER = ['DESC', 'ASC'];
 export const STATUS_ARTICLE = {
     BLOCKED: 'blocked',
@@ -6,4 +6,3 @@ export const STATUS_ARTICLE = {
     REJECTED: 'rejected',
     APPROVED: 'approved',
 };
-

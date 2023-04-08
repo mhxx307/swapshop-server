@@ -8,7 +8,15 @@ import {
     BaseEntity,
     OneToMany,
 } from 'typeorm';
-import { Article, Comment, UserRole, Message, Favorite, Conversation } from '.';
+import {
+    Article,
+    Comment,
+    UserRole,
+    Message,
+    Favorite,
+    Conversation,
+    Review,
+} from '.';
 import { STATUS_USER } from '../constants/user';
 
 @ObjectType()
@@ -49,9 +57,8 @@ export default class User extends BaseEntity {
     @Column({ nullable: true })
     avatar: string;
 
-    @Field({ nullable: true })
-    @Column({ nullable: true, default: 0 })
-    rating: number;
+    @OneToMany(() => Review, (review) => review.user)
+    review: Review[];
 
     @Field(() => [UserRole])
     @OneToMany(() => UserRole, (ur) => ur.user)

@@ -26,7 +26,12 @@ export const checkAlreadyLogin: MiddlewareFn<IMyContext> = async (
 };
 
 export const checkAdmin: MiddlewareFn<IMyContext> = async (
-    { context: { req } },
+    {
+        context: {
+            req,
+            dataLoaders: { roleLoader },
+        },
+    },
     next,
 ) => {
     if (!req.session.userId) {
@@ -35,9 +40,9 @@ export const checkAdmin: MiddlewareFn<IMyContext> = async (
         );
     }
 
-    const roles = await findRoles(req.session.userId);
+    const roles = await findRoles(req.session.userId, roleLoader);
 
-    if (!roles.find((role) => role.name === 'admin')) {
+    if (!roles.find((role) => role?.name === 'admin')) {
         throw new GraphQLError('Not authorized to perform GraphQL operations');
     }
 

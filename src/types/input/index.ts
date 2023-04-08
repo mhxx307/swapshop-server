@@ -11,3 +11,4 @@ export { default as UpdateCommentInput } from './updateComment.input';
 export { default as UpdateProfileInput } from './updateProfile.input';
 export { default as UpdateCategoryInput } from './updateCategory.input';
 export { default as InsertMessageInput } from './insertMessage.input';
+export { default as ReviewUserInput } from './reviewUser.input';

@@ -45,6 +45,21 @@ export default class CommentResolver {
                 where: { articleId, userId: req.session.userId },
             });
 
+            const existingArticle = await Article.findOne({
+                where: { id: articleId },
+            });
+
+            if (!existingArticle) {
+                return {
+                    code: 400,
+                    success: false,
+                    message: 'Article not found',
+                };
+            }
+
+            existingArticle.favoritesCount = existingArticle.favoritesCount + 1;
+            await existingArticle.save();
+
             if (existingFavorite) {
                 return {
                     code: 400,

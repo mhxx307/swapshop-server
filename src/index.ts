@@ -23,6 +23,7 @@ import {
     Conversation,
     Favorite,
     Message,
+    Review,
     Role,
     User,
     UserRole,
@@ -38,6 +39,7 @@ import {
     FavoriteResolver,
     MessageResolver,
     ConversationResolver,
+    ReviewResolver,
 } from './resolvers';
 import {
     COOKIE_MAX_AGE,
@@ -104,6 +106,7 @@ const main = async () => {
             Favorite,
             Message,
             Conversation,
+            Review,
         ],
         migrations: [path.join(__dirname, '/migrations/*')],
         cli: {
@@ -183,6 +186,7 @@ const main = async () => {
                 FavoriteResolver,
                 MessageResolver,
                 ConversationResolver,
+                ReviewResolver,
             ],
             validate: false,
         }),

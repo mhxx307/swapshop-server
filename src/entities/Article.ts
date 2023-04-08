@@ -72,6 +72,12 @@ export default class Article extends BaseEntity {
 
     @Field()
     @Column({
+        default: 0,
+    })
+    favoritesCount: number;
+
+    @Field()
+    @Column({
         default: STATUS_ARTICLE.PENDING,
     })
     status: string;

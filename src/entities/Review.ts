@@ -6,7 +6,9 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
     BaseEntity,
+    ManyToOne,
 } from 'typeorm';
+import User from './User';
 
 @ObjectType()
 @Entity('reviews')
@@ -19,8 +21,23 @@ export default class Review extends BaseEntity {
     @Column({ unique: true })
     content!: string;
 
+	@Field()
+    @Column({ default: 0 })
+    rating: number;
+
     @Column()
-    point?: string;
+    userId!: string;
+
+    @Field(() => User)
+    @ManyToOne(() => User, (user) => user.review)
+    user: User;
+
+    @Column()
+    assessorId!: string;
+
+    @Field(() => User)
+    @ManyToOne(() => User, (user) => user.review)
+    assessor: User;
 
     @Field()
     @CreateDateColumn()

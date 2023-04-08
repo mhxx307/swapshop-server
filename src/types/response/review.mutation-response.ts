@@ -3,7 +3,7 @@ import { Review } from '../../entities';
 import IMutationResponse, { FieldError } from './mutation-response';
 
 @ObjectType({ implements: IMutationResponse })
-export default class CategoryMutationResponse implements IMutationResponse {
+export default class ReviewMutationResponse implements IMutationResponse {
     code: number;
     success: boolean;
     message?: string;
