@@ -161,6 +161,7 @@ export default class ArticleResolver {
                 order_by = ORDER[0];
             }
 
+            // nho vao database them column favoritesCount in article entity
             if (!SORT_BY.includes(sort_by as string)) {
                 sort_by = SORT_BY[0];
             }
