@@ -21,6 +21,7 @@ export default class Review extends BaseEntity {
     @Column({ unique: true })
     content!: string;
 
+	@Field()
     @Column({ default: 0 })
     rating: number;
 

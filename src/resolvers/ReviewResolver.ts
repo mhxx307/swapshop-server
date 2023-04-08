@@ -12,7 +12,7 @@ import {
 import { Review, User } from '../entities';
 import { checkAuth } from '../middleware/session';
 import { IMyContext } from '../types/context';
-import { ReviewUserInput, UpdateReviewInput } from '../types/input';
+import { ReviewUserInput } from '../types/input';
 import { ReviewMutationResponse } from '../types/response';
 import { showError } from '../utils';
 import {
@@ -70,12 +70,17 @@ export default class ReviewResolver {
                 },
             });
 
-            if (existingReview)
+            if (existingReview) {
+                existingReview.content = content;
+                existingReview.rating = realRating;
+
                 return {
-                    code: 400,
-                    success: false,
-                    message: 'You have already reviewed this user',
+                    code: 200,
+                    success: true,
+                    message: 'Review updated successfully',
+                    review: await existingReview.save(),
                 };
+            }
 
             const newReview = Review.create({
                 content,
@@ -115,7 +120,7 @@ export default class ReviewResolver {
                     message: 'Review not found',
                 };
 
-            if (existingReview.userId !== req.session.userId) {
+            if (existingReview.assessorId !== req.session.userId) {
                 return {
                     code: 401,
                     success: false,
@@ -129,50 +134,6 @@ export default class ReviewResolver {
                 code: 200,
                 success: true,
                 message: 'Delete successfully',
-            };
-        } catch (error) {
-            return showError(error);
-        }
-    }
-
-    @Mutation(() => ReviewMutationResponse)
-    @UseMiddleware(checkAuth)
-    async updateReview(
-        @Arg('updateReviewInput') updateReviewInput: UpdateReviewInput,
-        @Ctx() { req }: IMyContext,
-    ): Promise<ReviewMutationResponse> {
-        try {
-            const { content, rating, reviewId } = updateReviewInput;
-
-            const existingReview = await Review.findOne({
-                where: {
-                    id: reviewId,
-                },
-            });
-
-            if (!existingReview)
-                return {
-                    code: 400,
-                    success: false,
-                    message: 'Review not found',
-                };
-
-            if (existingReview.userId === req.session.userId) {
-                return {
-                    code: 401,
-                    success: false,
-                    message: 'Not review yourself',
-                };
-            }
-
-            existingReview.content = content;
-            existingReview.rating = rating;
-
-            return {
-                code: 200,
-                success: true,
-                message: 'Update successfully',
-                review: await existingReview.save(),
             };
         } catch (error) {
             return showError(error);
