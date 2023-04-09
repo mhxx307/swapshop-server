@@ -1,6 +1,10 @@
+import DataLoader from 'dataloader';
 import { Role, UserRole } from '../entities';
 
-export const findRoles = async (userId: string, roleLoader: any) => {
+export const findRoles = async (
+    userId: string,
+    roleLoader: DataLoader<string, Role | undefined, string>,
+) => {
     // find roles of user from database
     // const roles = await Role.find({
     //     relations: ['users'],

@@ -1,17 +1,6 @@
 import { Field, ObjectType, InputType } from 'type-graphql';
 import { Article } from '../entities';
-
-@ObjectType()
-class Pagination {
-    @Field(() => Number || String)
-    page: string | number;
-
-    @Field(() => Number || String)
-    limit: string | number;
-
-    @Field(() => Number || String)
-    page_size: string | number;
-}
+import { Pagination } from './utils';
 
 @ObjectType()
 class ArticlesResponse {
@@ -23,7 +12,7 @@ class ArticlesResponse {
 }
 
 @ObjectType()
-export class ResponseSuccess {
+export class ArticleResponseSuccess {
     @Field()
     message: string;
 
