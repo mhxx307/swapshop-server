@@ -20,6 +20,7 @@ import {
     ReviewResponseSuccess,
 } from '../types/paginationReview';
 import { FindManyOptions } from 'typeorm';
+import { calculateUserRating } from '../utils/user';
 
 @Resolver(() => Review)
 export default class ReviewResolver {
@@ -48,6 +49,7 @@ export default class ReviewResolver {
         try {
             const { content, rating, userId } = reviewUserInput;
             const realRating = Math.min(5, rating);
+            const user = await User.findOneOrFail(userId);
 
             if (realRating < 0)
                 return {
@@ -74,6 +76,9 @@ export default class ReviewResolver {
                 existingReview.content = content;
                 existingReview.rating = realRating;
 
+                user.rating = await calculateUserRating(userId);
+                await user.save();
+
                 return {
                     code: 200,
                     success: true,
@@ -88,6 +93,9 @@ export default class ReviewResolver {
                 userId,
                 assessorId: req.session.userId,
             });
+
+            user.rating = await calculateUserRating(userId);
+            await user.save();
 
             return {
                 code: 200,

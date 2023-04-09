@@ -1,5 +1,5 @@
 import DataLoader from 'dataloader';
-import { Role, UserRole } from '../entities';
+import { Review, Role, UserRole } from '../entities';
 
 export const findRoles = async (
     userId: string,
@@ -34,3 +34,11 @@ export const findRoles = async (
 
     return roles;
 };
+
+export async function calculateUserRating(userId: string): Promise<number> {
+    const reviews = await Review.find({ where: { userId } });
+    const totalRating = reviews.reduce((acc, review) => acc + review.rating, 0);
+    const averageRating = totalRating / reviews.length;
+    const roundedRating = Math.round(averageRating * 2) / 2;
+    return roundedRating;
+}

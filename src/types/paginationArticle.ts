@@ -51,4 +51,7 @@ export class QueryConfig {
 
     @Field({ nullable: true })
     userId?: string;
+
+    @Field(() => String || Number, { nullable: true })
+    user_rating?: string | number;
 }

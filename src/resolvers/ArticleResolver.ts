@@ -9,6 +9,7 @@ import {
     UseMiddleware,
 } from 'type-graphql';
 import {
+    Equal,
     FindManyOptions,
     In,
     LessThanOrEqual,
@@ -104,6 +105,7 @@ export default class ArticleResolver {
                 price_min,
                 page = 1,
                 userId,
+                user_rating,
             } = queryConfig;
 
             let { order_by, sort_by } = queryConfig;
@@ -114,7 +116,19 @@ export default class ArticleResolver {
                 | FindManyOptions<Article>
                 | { [key: string]: unknown } = {
                 take: realLimit,
+                join: {
+                    alias: 'article',
+                    leftJoinAndSelect: {
+                        user: 'article.user',
+                    },
+                },
             };
+
+            if (user_rating) {
+                findOptions.where = {
+                    'user.rating': Equal(Number(user_rating)),
+                };
+            }
 
             if (categories && categories.length > 0) {
                 const categoryIds = categories.map((category) => [category]);
@@ -131,7 +145,7 @@ export default class ArticleResolver {
 
             if (isFree) {
                 findOptions.where = {
-                    price: null,
+                    price: 0,
                 };
             }
 
@@ -161,15 +175,19 @@ export default class ArticleResolver {
                 order_by = ORDER[0];
             }
 
-            // nho vao database them column favoritesCount in article entity
             if (!SORT_BY.includes(sort_by as string)) {
                 sort_by = SORT_BY[0];
             }
 
-            findOptions.order = {
-                [sort_by as string]: order_by,
-            };
-
+            if (sort_by === 'user_rating') {
+                findOptions.order = {
+                    'user.rating': order_by,
+                };
+            } else {
+                findOptions.order = {
+                    [sort_by as string]: order_by,
+                };
+            }
             findOptions.skip = Number(page) * realLimit - realLimit;
 
             findOptions.take = realLimit;
