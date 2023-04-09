@@ -273,7 +273,7 @@ export default class ArticleResolver {
 
             return {
                 code: 200,
-                success: false,
+                success: true,
                 message: 'Article updated successfully',
                 article: await existingArticle.save(),
             };
@@ -337,9 +337,6 @@ export default class ArticleResolver {
                 code: 400,
                 success: false,
                 message: 'article no longer exists',
-                errors: [
-                    { field: 'article', message: 'article no longer exists' },
-                ],
             };
         }
 
