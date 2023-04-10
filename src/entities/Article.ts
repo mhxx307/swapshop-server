@@ -40,9 +40,12 @@ export default class Article extends BaseEntity {
     @Column('text', { array: true, nullable: true })
     images: string[];
 
-    @Field({ nullable: true })
-    @Column({ nullable: true })
-    price: number;
+    @Field()
+    @Column({
+        default: 0,
+        type: 'real',
+    })
+    price: string;
 
     @Field()
     @Column()
@@ -87,6 +90,10 @@ export default class Article extends BaseEntity {
         default: 0,
     })
     views: number;
+
+    // @Field()
+    // @Column()
+    // address: Address;
 
     @Field()
     @CreateDateColumn({ type: 'timestamptz' })

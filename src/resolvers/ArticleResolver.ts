@@ -9,6 +9,7 @@ import {
     UseMiddleware,
 } from 'type-graphql';
 import {
+    Between,
     FindManyOptions,
     In,
     LessThanOrEqual,
@@ -104,6 +105,7 @@ export default class ArticleResolver {
                 price_min,
                 page = 1,
                 userId,
+                user_rating,
             } = queryConfig;
 
             let { order_by, sort_by } = queryConfig;
@@ -114,7 +116,15 @@ export default class ArticleResolver {
                 | FindManyOptions<Article>
                 | { [key: string]: unknown } = {
                 take: realLimit,
+                relations: ['user'], // add a join with the User entity
             };
+
+            // Add a condition to filter by the rating attribute in the User entity
+            if (user_rating) {
+                findOptions.where = {
+                    'user.rating': Number(user_rating),
+                };
+            }
 
             if (categories && categories.length > 0) {
                 const categoryIds = categories.map((category) => [category]);
@@ -131,7 +141,7 @@ export default class ArticleResolver {
 
             if (isFree) {
                 findOptions.where = {
-                    price: null,
+                    price: 0,
                 };
             }
 
@@ -141,11 +151,10 @@ export default class ArticleResolver {
                 };
             }
 
+            // wrong in between, need add address
             if (Number(price_min) && Number(price_max)) {
                 findOptions.where = {
-                    price: {
-                        between: [Number(price_min), Number(price_max)],
-                    },
+                    price: Between(Number(price_min), Number(price_max)),
                 };
             } else if (Number(price_min)) {
                 findOptions.where = {
@@ -161,7 +170,6 @@ export default class ArticleResolver {
                 order_by = ORDER[0];
             }
 
-            // nho vao database them column favoritesCount in article entity
             if (!SORT_BY.includes(sort_by as string)) {
                 sort_by = SORT_BY[0];
             }

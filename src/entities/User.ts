@@ -89,6 +89,10 @@ export default class User extends BaseEntity {
     status: string;
 
     @Field()
+    @Column({ default: 0 })
+    rating: number;
+
+    @Field()
     @CreateDateColumn()
     createdDate: Date;
 

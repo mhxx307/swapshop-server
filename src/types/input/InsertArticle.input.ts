@@ -18,5 +18,5 @@ export default class InsertArticleInput {
     productName!: string;
 
     @Field({ nullable: true })
-    price: number;
+    price: string;
 }
