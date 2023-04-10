@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class initialize1680663183068 implements MigrationInterface {
-    name = 'initialize1680663183068';
+export class initizalize1681100917906 implements MigrationInterface {
+    name = 'initizalize1681100917906';
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(
@@ -23,16 +23,16 @@ export class initialize1680663183068 implements MigrationInterface {
             `CREATE TABLE "messages" ("id" SERIAL NOT NULL, "conversationId" character varying NOT NULL, "senderId" uuid NOT NULL, "status" character varying NOT NULL DEFAULT 'pending', "text" character varying NOT NULL, "createdDate" TIMESTAMP NOT NULL DEFAULT now(), "updatedDate" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_18325f38ae6de43878487eff986" PRIMARY KEY ("id"))`,
         );
         await queryRunner.query(
-            `CREATE TABLE "reviews" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "content" character varying NOT NULL, "point" character varying NOT NULL, "createdDate" TIMESTAMP NOT NULL DEFAULT now(), "updatedDate" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "UQ_71df63bb36cc008a73f84aa4ed5" UNIQUE ("content"), CONSTRAINT "PK_231ae565c273ee700b283f15c1d" PRIMARY KEY ("id"))`,
+            `CREATE TABLE "reviews" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "content" character varying NOT NULL, "rating" integer NOT NULL DEFAULT '0', "userId" uuid NOT NULL, "assessorId" uuid NOT NULL, "createdDate" TIMESTAMP NOT NULL DEFAULT now(), "updatedDate" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "UQ_71df63bb36cc008a73f84aa4ed5" UNIQUE ("content"), CONSTRAINT "PK_231ae565c273ee700b283f15c1d" PRIMARY KEY ("id"))`,
         );
         await queryRunner.query(
             `CREATE TABLE "conversations" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "member1Id" uuid NOT NULL, "member2Id" uuid NOT NULL, "createdDate" TIMESTAMP NOT NULL DEFAULT now(), "updatedDate" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_ee34f4f7ced4ec8681f26bf04ef" PRIMARY KEY ("id"))`,
         );
         await queryRunner.query(
-            `CREATE TABLE "users" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "username" character varying NOT NULL, "password" character varying NOT NULL, "email" character varying NOT NULL, "address" character varying, "phoneNumber" character varying, "fullName" character varying NOT NULL, "birthday" character varying, "avatar" character varying, "rating" integer DEFAULT '0', "status" character varying NOT NULL DEFAULT 'active', "createdDate" TIMESTAMP NOT NULL DEFAULT now(), "updatedDate" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "UQ_fe0bb3f6520ee0469504521e710" UNIQUE ("username"), CONSTRAINT "UQ_97672ac88f789774dd47f7c8be3" UNIQUE ("email"), CONSTRAINT "UQ_1e3d0240b49c40521aaeb953293" UNIQUE ("phoneNumber"), CONSTRAINT "PK_a3ffb1c0c8416b9fc6f907b7433" PRIMARY KEY ("id"))`,
+            `CREATE TABLE "users" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "username" character varying NOT NULL, "password" character varying NOT NULL, "email" character varying NOT NULL, "address" character varying, "phoneNumber" character varying, "fullName" character varying NOT NULL, "birthday" character varying, "avatar" character varying, "status" character varying NOT NULL DEFAULT 'active', "rating" integer NOT NULL DEFAULT '0', "createdDate" TIMESTAMP NOT NULL DEFAULT now(), "updatedDate" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "UQ_fe0bb3f6520ee0469504521e710" UNIQUE ("username"), CONSTRAINT "UQ_97672ac88f789774dd47f7c8be3" UNIQUE ("email"), CONSTRAINT "UQ_1e3d0240b49c40521aaeb953293" UNIQUE ("phoneNumber"), CONSTRAINT "PK_a3ffb1c0c8416b9fc6f907b7433" PRIMARY KEY ("id"))`,
         );
         await queryRunner.query(
-            `CREATE TABLE "articles" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "title" character varying NOT NULL, "description" character varying NOT NULL, "thumbnail" character varying NOT NULL, "images" text array, "price" integer, "productName" character varying NOT NULL, "categoryIds" uuid array NOT NULL, "userId" uuid NOT NULL, "status" character varying NOT NULL DEFAULT 'active', "createdDate" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedDate" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "PK_0a6e2c450d83e0b6052c2793334" PRIMARY KEY ("id"))`,
+            `CREATE TABLE "articles" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "title" character varying NOT NULL, "description" character varying NOT NULL, "thumbnail" character varying NOT NULL, "images" text array, "price" real NOT NULL DEFAULT '0', "productName" character varying NOT NULL, "categoryIds" uuid array NOT NULL, "userId" uuid NOT NULL, "favoritesCount" integer NOT NULL DEFAULT '0', "status" character varying NOT NULL DEFAULT 'pending', "views" integer NOT NULL DEFAULT '0', "createdDate" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedDate" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "PK_0a6e2c450d83e0b6052c2793334" PRIMARY KEY ("id"))`,
         );
         await queryRunner.query(
             `CREATE TABLE "articles_categories_categories" ("articlesId" uuid NOT NULL, "categoriesId" uuid NOT NULL, CONSTRAINT "PK_d99e5b5140f980c6e7b63fc1f16" PRIMARY KEY ("articlesId", "categoriesId"))`,
@@ -63,6 +63,12 @@ export class initialize1680663183068 implements MigrationInterface {
         );
         await queryRunner.query(
             `ALTER TABLE "messages" ADD CONSTRAINT "FK_2db9cf2b3ca111742793f6c37ce" FOREIGN KEY ("senderId") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+        );
+        await queryRunner.query(
+            `ALTER TABLE "reviews" ADD CONSTRAINT "FK_7ed5659e7139fc8bc039198cc1f" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+        );
+        await queryRunner.query(
+            `ALTER TABLE "reviews" ADD CONSTRAINT "FK_1907ddf090d125771c70d653329" FOREIGN KEY ("assessorId") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
         );
         await queryRunner.query(
             `ALTER TABLE "conversations" ADD CONSTRAINT "FK_15e5404e1382f690fd5c1a92dfb" FOREIGN KEY ("member1Id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
@@ -96,6 +102,12 @@ export class initialize1680663183068 implements MigrationInterface {
         );
         await queryRunner.query(
             `ALTER TABLE "conversations" DROP CONSTRAINT "FK_15e5404e1382f690fd5c1a92dfb"`,
+        );
+        await queryRunner.query(
+            `ALTER TABLE "reviews" DROP CONSTRAINT "FK_1907ddf090d125771c70d653329"`,
+        );
+        await queryRunner.query(
+            `ALTER TABLE "reviews" DROP CONSTRAINT "FK_7ed5659e7139fc8bc039198cc1f"`,
         );
         await queryRunner.query(
             `ALTER TABLE "messages" DROP CONSTRAINT "FK_2db9cf2b3ca111742793f6c37ce"`,

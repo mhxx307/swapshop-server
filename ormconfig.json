@@ -1,9 +1,9 @@
 {
     "type": "postgres",
-    "host": "db.lliqjchhtottfkajbbrr.supabase.co",
+    "host": "localhost",
     "port": 5432,
     "username": "postgres",
-    "password": "zFDmwUfhL6gK346q",
+    "password": "123456",
     "database": "postgres",
     "entities": ["dist/entities/*.js"],
     "migrations": ["dist/migrations/*.js"]
