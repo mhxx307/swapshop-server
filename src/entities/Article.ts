@@ -43,8 +43,9 @@ export default class Article extends BaseEntity {
     @Field()
     @Column({
         default: 0,
+        type: 'real',
     })
-    price: number;
+    price: string;
 
     @Field()
     @Column()

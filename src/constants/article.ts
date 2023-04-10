@@ -1,10 +1,4 @@
-export const SORT_BY = [
-    'createdDate',
-    'views',
-    'price',
-    'favoritesCount',
-    'user_rating',
-];
+export const SORT_BY = ['createdDate', 'views', 'price', 'favoritesCount'];
 
 export const ORDER = ['DESC', 'ASC'];
 

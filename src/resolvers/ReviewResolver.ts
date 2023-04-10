@@ -77,6 +77,7 @@ export default class ReviewResolver {
                 existingReview.rating = realRating;
 
                 user.rating = await calculateUserRating(userId);
+
                 await user.save();
 
                 return {

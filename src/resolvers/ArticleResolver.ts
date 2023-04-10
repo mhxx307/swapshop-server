@@ -9,7 +9,7 @@ import {
     UseMiddleware,
 } from 'type-graphql';
 import {
-    Equal,
+    Between,
     FindManyOptions,
     In,
     LessThanOrEqual,
@@ -116,17 +116,13 @@ export default class ArticleResolver {
                 | FindManyOptions<Article>
                 | { [key: string]: unknown } = {
                 take: realLimit,
-                join: {
-                    alias: 'article',
-                    leftJoinAndSelect: {
-                        user: 'article.user',
-                    },
-                },
+                relations: ['user'], // add a join with the User entity
             };
 
+            // Add a condition to filter by the rating attribute in the User entity
             if (user_rating) {
                 findOptions.where = {
-                    'user.rating': Equal(Number(user_rating)),
+                    'user.rating': Number(user_rating),
                 };
             }
 
@@ -155,11 +151,10 @@ export default class ArticleResolver {
                 };
             }
 
+            // wrong in between, need add address
             if (Number(price_min) && Number(price_max)) {
                 findOptions.where = {
-                    price: {
-                        between: [Number(price_min), Number(price_max)],
-                    },
+                    price: Between(Number(price_min), Number(price_max)),
                 };
             } else if (Number(price_min)) {
                 findOptions.where = {
@@ -179,15 +174,10 @@ export default class ArticleResolver {
                 sort_by = SORT_BY[0];
             }
 
-            if (sort_by === 'user_rating') {
-                findOptions.order = {
-                    'user.rating': order_by,
-                };
-            } else {
-                findOptions.order = {
-                    [sort_by as string]: order_by,
-                };
-            }
+            findOptions.order = {
+                [sort_by as string]: order_by,
+            };
+
             findOptions.skip = Number(page) * realLimit - realLimit;
 
             findOptions.take = realLimit;
