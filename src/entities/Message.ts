@@ -35,9 +35,13 @@ export default class Message extends BaseEntity {
     })
     status: string;
 
-    @Field()
-    @Column()
+    @Field({ nullable: true })
+    @Column({ nullable: true })
     text!: string;
+
+    @Field(() => [String], { nullable: true })
+    @Column('text', { array: true, nullable: true })
+    images: string[];
 
     @Field()
     @CreateDateColumn()

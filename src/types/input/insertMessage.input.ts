@@ -10,4 +10,7 @@ export default class InsertMessageInput {
 
     @Field()
     senderId: string;
+
+    @Field(() => [String])
+    images!: string[];
 }

@@ -33,12 +33,14 @@ export default class MessageResolver {
         @Arg('insertMessageInput') insertMessageInput: InsertMessageInput,
     ): Promise<MessageMutationResponse> {
         try {
-            const { conversationId, senderId, text } = insertMessageInput;
+            const { conversationId, senderId, text, images } =
+                insertMessageInput;
 
             const newMessage = Message.create({
                 senderId,
                 conversationId,
                 text,
+                images,
             });
 
             return {
