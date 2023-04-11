@@ -48,15 +48,16 @@ export default class ReviewResolver {
     ): Promise<ReviewMutationResponse> {
         try {
             const { content, rating, userId } = reviewUserInput;
-            const realRating = Math.min(5, rating);
-            const user = await User.findOneOrFail(userId);
 
-            if (realRating < 0)
+            if (Number.isNaN(rating) || rating < 0)
                 return {
                     code: 400,
                     success: false,
-                    message: 'Rating must be greater than 0',
+                    message: 'Rating must be greater than 0 or is not NaN',
                 };
+
+            const realRating = Math.min(5, Number(rating));
+            const user = await User.findOneOrFail(userId);
 
             if (userId === req.session.userId)
                 return {
@@ -76,15 +77,16 @@ export default class ReviewResolver {
                 existingReview.content = content;
                 existingReview.rating = realRating;
 
-                user.rating = await calculateUserRating(userId);
+                const review = await existingReview.save();
 
+                user.rating = await calculateUserRating(userId);
                 await user.save();
 
                 return {
                     code: 200,
                     success: true,
                     message: 'Review updated successfully',
-                    review: await existingReview.save(),
+                    review: review,
                 };
             }
 
@@ -95,6 +97,7 @@ export default class ReviewResolver {
                 assessorId: req.session.userId,
             });
 
+            const review = await newReview.save();
             user.rating = await calculateUserRating(userId);
             await user.save();
 
@@ -102,7 +105,7 @@ export default class ReviewResolver {
                 code: 200,
                 success: true,
                 message: 'Review created successfully',
-                review: await newReview.save(),
+                review: review,
             };
         } catch (error) {
             return showError(error);
