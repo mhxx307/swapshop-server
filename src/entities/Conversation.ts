@@ -10,6 +10,7 @@ import {
     OneToMany,
 } from 'typeorm';
 import User from './User';
+import Article from './Article';
 import Message from './Message';
 
 @ObjectType()
@@ -32,6 +33,13 @@ export default class Conversation extends BaseEntity {
     @Field(() => User)
     @ManyToOne(() => User, (user) => user.conversations2)
     member2: User;
+
+    @Column()
+    articleId!: string;
+
+    @Field(() => Article)
+    @ManyToOne(() => Article, (article) => article.conversations)
+    article: Article;
 
     @OneToMany(() => Message, (message) => message.conversation)
     messages: Message[];

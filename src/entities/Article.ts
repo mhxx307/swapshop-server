@@ -16,6 +16,8 @@ import User from './User';
 import Comment from './Comment';
 import Category from './Category';
 import Favorite from './Favorite';
+import Message from './Message';
+import Conversation from './Conversation';
 import Report from './Report';
 
 @ObjectType()
@@ -73,6 +75,9 @@ export default class Article extends BaseEntity {
 
     @OneToMany(() => Favorite, (favorite) => favorite.article)
     favorites: Favorite[];
+
+    @OneToMany(() => Conversation, (conversation) => conversation.article)
+    conversations: Conversation[];
 
     @OneToMany(() => Report, (report) => report.user)
     reports: Report[];
