@@ -27,6 +27,7 @@ import {
     Role,
     User,
     UserRole,
+    Report,
 } from './entities';
 
 import {
@@ -40,6 +41,7 @@ import {
     MessageResolver,
     ConversationResolver,
     ReviewResolver,
+    ReportResolver,
 } from './resolvers';
 import {
     COOKIE_MAX_AGE,
@@ -107,6 +109,7 @@ const main = async () => {
             Message,
             Conversation,
             Review,
+            Report,
         ],
         migrations: [path.join(__dirname, '/migrations/*')],
         cli: {
@@ -187,6 +190,7 @@ const main = async () => {
                 MessageResolver,
                 ConversationResolver,
                 ReviewResolver,
+                ReportResolver,
             ],
             validate: false,
         }),

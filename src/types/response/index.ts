@@ -9,3 +9,4 @@ export { default as UserRoleMutationResponse } from './user-role.mutation-respon
 export { default as FavoriteMutationResponse } from './favorite.mutation-response';
 export { default as ConversationMutationResponse } from './conversation.mutation-response';
 export { default as MessageMutationResponse } from './message.mutation-response';
+export { default as ReportMutationResponse } from './report.mutation-response';

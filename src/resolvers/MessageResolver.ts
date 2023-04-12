@@ -11,7 +11,7 @@ import {
 } from 'type-graphql';
 
 import { showError } from '../utils';
-import { Message, User } from '../entities';
+import { Conversation, Message, User } from '../entities';
 import { MessageMutationResponse } from '../types/response';
 import { IMyContext } from '../types/context';
 import { checkAuth } from '../middleware/session';
@@ -24,6 +24,14 @@ export default class MessageResolver {
         @Ctx() { dataLoaders: { userLoader } }: IMyContext,
     ) {
         return await userLoader.load(root.senderId);
+    }
+
+    @FieldResolver(() => Conversation)
+    async conversation(
+        @Root() root: Message,
+        @Ctx() { dataLoaders: { conversationLoader } }: IMyContext,
+    ) {
+        return await conversationLoader.load(root.conversationId);
     }
 
     // add new message
