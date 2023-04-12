@@ -1,4 +1,4 @@
-import { User, Conversation } from '../entities';
+import { User, Conversation, Article } from '../entities';
 import {
     Arg,
     Ctx,
@@ -16,7 +16,7 @@ import { checkAuth } from '../middleware/session';
 
 @Resolver(() => Conversation)
 export default class ConversationResolver {
-    @FieldResolver(() => [User])
+    @FieldResolver(() => User)
     async member1(
         @Root() root: Conversation,
         @Ctx() { dataLoaders: { userLoader } }: IMyContext,
@@ -24,7 +24,7 @@ export default class ConversationResolver {
         return await userLoader.load(root.member1Id);
     }
 
-    @FieldResolver(() => [User])
+    @FieldResolver(() => User)
     async member2(
         @Root() root: Conversation,
         @Ctx() { dataLoaders: { userLoader } }: IMyContext,
@@ -32,10 +32,19 @@ export default class ConversationResolver {
         return await userLoader.load(root.member2Id);
     }
 
+    @FieldResolver(() => Article)
+    async article(
+        @Root() root: Conversation,
+        @Ctx() { dataLoaders: { articleLoader } }: IMyContext,
+    ) {
+        return await articleLoader.load(root.articleId);
+    }
+
     @Mutation(() => ConversationMutationResponse)
     @UseMiddleware(checkAuth)
     async newConversation(
         @Arg('userId') userId: string,
+        @Arg('articleId') articleId: string,
         @Ctx() { req }: IMyContext,
     ): Promise<ConversationMutationResponse> {
         try {
@@ -49,8 +58,16 @@ export default class ConversationResolver {
 
             const existConversation = await Conversation.findOne({
                 where: [
-                    { member1Id: req.session.userId, member2Id: userId },
-                    { member1Id: userId, member2Id: req.session.userId },
+                    {
+                        member1Id: req.session.userId,
+                        member2Id: userId,
+                        articleId: articleId,
+                    },
+                    {
+                        member1Id: userId,
+                        member2Id: req.session.userId,
+                        articleId: articleId,
+                    },
                 ],
             });
 
@@ -66,6 +83,7 @@ export default class ConversationResolver {
             const newConversation = Conversation.create({
                 member1Id: req.session.userId,
                 member2Id: userId,
+                articleId: articleId,
             });
 
             return {
@@ -108,14 +126,23 @@ export default class ConversationResolver {
     @UseMiddleware(checkAuth)
     async getConversation(
         @Arg('userId') userId: string,
+        @Arg('articleId') articleId: string,
         @Ctx() { req }: IMyContext,
     ): Promise<Conversation | null> {
         try {
             // getConversation between two users
             const conversation = await Conversation.findOne({
                 where: [
-                    { member1Id: req.session.userId, member2Id: userId },
-                    { member1Id: userId, member2Id: req.session.userId },
+                    {
+                        member1Id: req.session.userId,
+                        member2Id: userId,
+                        articleId: articleId,
+                    },
+                    {
+                        member1Id: userId,
+                        member2Id: req.session.userId,
+                        articleId: articleId,
+                    },
                 ],
             });
 

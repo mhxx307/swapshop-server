@@ -9,6 +9,7 @@ import {
     ManyToOne,
 } from 'typeorm';
 import User from './User';
+import Article from './Article';
 
 @ObjectType()
 @Entity('conversations')
@@ -30,6 +31,13 @@ export default class Conversation extends BaseEntity {
     @Field(() => User)
     @ManyToOne(() => User, (user) => user.conversations2)
     member2: User;
+
+    @Column()
+    articleId!: string;
+
+    @Field(() => Article)
+    @ManyToOne(() => Article, (article) => article.conversations)
+    article: Article;
 
     @Field()
     @CreateDateColumn()
