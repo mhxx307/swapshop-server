@@ -9,18 +9,19 @@ import {
     UseMiddleware,
 } from 'type-graphql';
 
-import { FavoriteMutationResponse } from '../types/response';
-import { Article, User, Favorite } from '../entities';
+import { Article, User } from '../entities';
 import { checkAuth } from '../middleware/session';
 import { IMyContext } from '../types/context';
 import { showError } from '../utils';
 import { In } from 'typeorm';
+import Report from '../entities/Report';
+import { ReportMutationResponse } from '../types/response';
 
-@Resolver(() => Favorite)
-export default class FavoriteResolver {
+@Resolver(() => Report)
+export default class ReportResolver {
     @FieldResolver(() => User)
     async user(
-        @Root() root: Favorite,
+        @Root() root: Report,
         @Ctx() { dataLoaders: { userLoader } }: IMyContext,
     ) {
         return await userLoader.load(root.userId);
@@ -28,20 +29,20 @@ export default class FavoriteResolver {
 
     @FieldResolver(() => Article)
     async article(
-        @Root() root: Favorite,
+        @Root() root: Report,
         @Ctx() { dataLoaders: { articleLoader } }: IMyContext,
     ) {
         return await articleLoader.load(root.articleId);
     }
 
-    @Mutation(() => FavoriteMutationResponse)
+    @Mutation(() => ReportMutationResponse)
     @UseMiddleware(checkAuth)
-    async addToFavorite(
+    async report(
         @Arg('articleId') articleId: string,
         @Ctx() { req }: IMyContext,
-    ): Promise<FavoriteMutationResponse> {
+    ): Promise<ReportMutationResponse> {
         try {
-            const existingFavorite = await Favorite.findOne({
+            const existingReport = await Report.findOne({
                 where: { articleId, userId: req.session.userId },
             });
 
@@ -57,18 +58,18 @@ export default class FavoriteResolver {
                 };
             }
 
-            existingArticle.favoritesCount = existingArticle.favoritesCount + 1;
+            existingArticle.reportsCount = existingArticle.reportsCount + 1;
             await existingArticle.save();
 
-            if (existingFavorite) {
+            if (existingReport) {
                 return {
                     code: 400,
                     success: false,
-                    message: 'Favorite already exists',
+                    message: 'You have already reported this article',
                 };
             }
 
-            const newFavorite = Favorite.create({
+            const newReport = Report.create({
                 articleId,
                 userId: req.session.userId,
             });
@@ -76,22 +77,22 @@ export default class FavoriteResolver {
             return {
                 code: 200,
                 success: true,
-                message: 'Favorite created successfully',
-                favorite: await newFavorite.save(),
+                message: 'report successfully',
+                report: await newReport.save(),
             };
         } catch (error) {
             return showError(error);
         }
     }
 
-    @Mutation(() => FavoriteMutationResponse)
+    @Mutation(() => ReportMutationResponse)
     @UseMiddleware(checkAuth)
-    async removeFromFavorite(
+    async cancelReport(
         @Arg('articleIds', () => [String]) articleIds: string[],
         @Ctx() { req }: IMyContext,
-    ): Promise<FavoriteMutationResponse> {
+    ): Promise<ReportMutationResponse> {
         try {
-            await Favorite.delete({
+            await Report.delete({
                 articleId: In(articleIds),
                 userId: req.session.userId,
             });
@@ -99,53 +100,35 @@ export default class FavoriteResolver {
             return {
                 code: 200,
                 success: true,
-                message: 'Favorite removed successfully',
+                message: 'Report removed successfully',
             };
         } catch (error) {
             return showError(error);
         }
     }
 
-    @Query(() => [Favorite], { nullable: true })
+    @Query(() => [Report], { nullable: true })
     @UseMiddleware(checkAuth)
-    async favorites(@Ctx() { req }: IMyContext): Promise<Favorite[] | null> {
+    async reports(@Ctx() { req }: IMyContext): Promise<Report[] | null> {
         try {
-            const favorites = await Favorite.find({
+            const reports = await Report.find({
                 where: { userId: req.session.userId },
                 relations: ['article'],
             });
 
-            return favorites;
+            return reports;
         } catch (error) {
             console.log(error);
             return null;
         }
     }
 
-    @Query(() => Boolean)
-    @UseMiddleware(checkAuth)
-    async isFavorite(
-        @Arg('articleId') articleId: string,
-        @Ctx() { req }: IMyContext,
-    ): Promise<boolean> {
-        try {
-            const favorite = await Favorite.findOne({
-                where: { articleId, userId: req.session.userId },
-            });
-
-            return !!favorite;
-        } catch (error) {
-            console.log(error);
-            return false;
-        }
-    }
-
     @Query(() => Number, { nullable: true })
-    async countFavoritesForArticle(
+    async countReportsForArticle(
         @Arg('articleId') articleId: string,
     ): Promise<number | null> {
         try {
-            const count = await Favorite.count({
+            const count = await Report.count({
                 where: { articleId },
             });
 

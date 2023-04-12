@@ -8,3 +8,4 @@ export { default as Favorite } from './Favorite';
 export { default as Message } from './Message';
 export { default as Review } from './Review';
 export { default as Conversation } from './Conversation';
+export { default as Report } from './Report';

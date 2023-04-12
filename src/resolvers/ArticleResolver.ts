@@ -106,17 +106,17 @@ export default class ArticleResolver {
                 page = 1,
                 userId,
                 user_rating,
+                status,
             } = queryConfig;
 
             let { order_by, sort_by } = queryConfig;
 
             const realLimit = Math.min(30, Number(limit) || 30);
 
-            const findOptions:
-                | FindManyOptions<Article>
-                | { [key: string]: unknown } = {
+            const findOptions: FindManyOptions<Article> = {
                 take: realLimit,
                 relations: ['user'], // add a join with the User entity
+                where: {},
             };
 
             // Add a condition to filter by the rating attribute in the User entity
@@ -124,6 +124,18 @@ export default class ArticleResolver {
                 findOptions.where = {
                     'user.rating': Number(user_rating),
                 };
+            }
+
+            if (userId || status) {
+                findOptions.where = {};
+
+                if (status) {
+                    findOptions.where.status = status;
+                }
+
+                if (userId) {
+                    findOptions.where.userId = userId;
+                }
             }
 
             if (categories && categories.length > 0) {
@@ -142,12 +154,6 @@ export default class ArticleResolver {
             if (isFree) {
                 findOptions.where = {
                     price: 0,
-                };
-            }
-
-            if (userId) {
-                findOptions.where = {
-                    userId,
                 };
             }
 

@@ -27,6 +27,7 @@ import {
     Role,
     User,
     UserRole,
+    Report,
 } from './entities';
 
 import {
@@ -40,6 +41,7 @@ import {
     MessageResolver,
     ConversationResolver,
     ReviewResolver,
+    ReportResolver,
 } from './resolvers';
 import {
     COOKIE_MAX_AGE,
@@ -80,9 +82,9 @@ const main = async () => {
                   host: process.env.HOST_DB,
               }
             : {
-                  database: 'swapshopdb',
+                  database: 'second_chance_db',
                   username: 'postgres',
-                  password: '123456789',
+                  password: '123456',
               }),
         logging: true,
         ...(__prod__
@@ -107,6 +109,7 @@ const main = async () => {
             Message,
             Conversation,
             Review,
+            Report,
         ],
         migrations: [path.join(__dirname, '/migrations/*')],
         cli: {
@@ -187,6 +190,7 @@ const main = async () => {
                 MessageResolver,
                 ConversationResolver,
                 ReviewResolver,
+                ReportResolver,
             ],
             validate: false,
         }),

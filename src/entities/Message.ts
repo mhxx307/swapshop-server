@@ -10,6 +10,7 @@ import {
     ManyToOne,
 } from 'typeorm';
 import User from './User';
+import Conversation from './Conversation';
 
 @ObjectType()
 @Entity('messages')
@@ -21,6 +22,13 @@ export default class Message extends BaseEntity {
     @Field()
     @Column()
     conversationId!: string;
+
+    @Field(() => Conversation)
+    @ManyToOne(() => Conversation, (conversation) => conversation.messages, {
+        cascade: true,
+        onDelete: 'CASCADE',
+    })
+    conversation: Conversation;
 
     @Column()
     senderId!: string;

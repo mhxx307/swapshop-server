@@ -1,5 +1,4 @@
-import { In } from 'typeorm';
-import { User, Article, Category, Role } from '../entities';
+import { User, Article, Category, Role, Conversation } from '../entities';
 import DataLoader from 'dataloader';
 
 const batchGetUsers = async (userIds: string[]) => {
@@ -26,6 +25,15 @@ const batchGetRoles = async (roleIds: string[]) => {
     return roleIds.map((roleId) => roles.find((role) => role.id === roleId));
 };
 
+const batchGetConversations = async (conversationIds: string[]) => {
+    const conversations = await Conversation.findByIds(conversationIds);
+    return conversationIds.map((conversationId) =>
+        conversations.find(
+            (conversation) => conversation.id === conversationId,
+        ),
+    );
+};
+
 export const buildDataLoaders = () => ({
     userLoader: new DataLoader<string, User | undefined>((userIds) =>
         batchGetUsers(userIds as string[]),
@@ -38,5 +46,8 @@ export const buildDataLoaders = () => ({
     ),
     roleLoader: new DataLoader<string, Role | undefined>((roleIds) =>
         batchGetRoles(roleIds as string[]),
+    ),
+    conversationLoader: new DataLoader<string, Conversation | undefined>(
+        (conversationIds) => batchGetConversations(conversationIds as string[]),
     ),
 });
