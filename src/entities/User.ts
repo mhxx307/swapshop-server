@@ -18,6 +18,7 @@ import {
     Review,
 } from '.';
 import { STATUS_USER } from '../constants/user';
+import Report from './Report';
 
 @ObjectType()
 @Entity('users')
@@ -72,6 +73,9 @@ export default class User extends BaseEntity {
 
     @OneToMany(() => Message, (message) => message.sender)
     messages: Message[];
+
+    @OneToMany(() => Report, (report) => report.user)
+    reports: Report[];
 
     @OneToMany(() => Favorite, (favorite) => favorite.user)
     favorites: Favorite[];

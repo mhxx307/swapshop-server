@@ -7,9 +7,11 @@ import {
     UpdateDateColumn,
     BaseEntity,
     ManyToOne,
+    OneToMany,
 } from 'typeorm';
 import User from './User';
 import Article from './Article';
+import Message from './Message';
 
 @ObjectType()
 @Entity('conversations')
@@ -38,6 +40,9 @@ export default class Conversation extends BaseEntity {
     @Field(() => Article)
     @ManyToOne(() => Article, (article) => article.conversations)
     article: Article;
+
+    @OneToMany(() => Message, (message) => message.conversation)
+    messages: Message[];
 
     @Field()
     @CreateDateColumn()

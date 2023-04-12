@@ -18,6 +18,7 @@ import Category from './Category';
 import Favorite from './Favorite';
 import Message from './Message';
 import Conversation from './Conversation';
+import Report from './Report';
 
 @ObjectType()
 @Entity('articles')
@@ -78,11 +79,20 @@ export default class Article extends BaseEntity {
     @OneToMany(() => Conversation, (conversation) => conversation.article)
     conversations: Conversation[];
 
+    @OneToMany(() => Report, (report) => report.user)
+    reports: Report[];
+
     @Field()
     @Column({
         default: 0,
     })
     favoritesCount: number;
+
+    @Field()
+    @Column({
+        default: 0,
+    })
+    reportsCount: number;
 
     @Field()
     @Column({
@@ -98,7 +108,7 @@ export default class Article extends BaseEntity {
 
     // @Field()
     // @Column()
-    // address: Address;
+    // address: string;
 
     @Field()
     @CreateDateColumn({ type: 'timestamptz' })
