@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class initizalize1681282779301 implements MigrationInterface {
-    name = 'initizalize1681282779301';
+export class initizalize1681379857408 implements MigrationInterface {
+    name = 'initizalize1681379857408';
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(
@@ -20,10 +20,10 @@ export class initizalize1681282779301 implements MigrationInterface {
             `CREATE TABLE "favorites" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "articleId" uuid NOT NULL, "userId" uuid NOT NULL, "createdDate" TIMESTAMP NOT NULL DEFAULT now(), "updatedDate" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_890818d27523748dd36a4d1bdc8" PRIMARY KEY ("id"))`,
         );
         await queryRunner.query(
-            `CREATE TABLE "conversations" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "member1Id" uuid NOT NULL, "member2Id" uuid NOT NULL, "createdDate" TIMESTAMP NOT NULL DEFAULT now(), "updatedDate" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_ee34f4f7ced4ec8681f26bf04ef" PRIMARY KEY ("id"))`,
+            `CREATE TABLE "conversations" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "member1Id" uuid NOT NULL, "member2Id" uuid NOT NULL, "articleId" uuid NOT NULL, "createdDate" TIMESTAMP NOT NULL DEFAULT now(), "updatedDate" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_ee34f4f7ced4ec8681f26bf04ef" PRIMARY KEY ("id"))`,
         );
         await queryRunner.query(
-            `CREATE TABLE "messages" ("id" SERIAL NOT NULL, "conversationId" uuid NOT NULL, "senderId" uuid NOT NULL, "status" character varying NOT NULL DEFAULT 'pending', "text" character varying NOT NULL, "createdDate" TIMESTAMP NOT NULL DEFAULT now(), "updatedDate" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_18325f38ae6de43878487eff986" PRIMARY KEY ("id"))`,
+            `CREATE TABLE "messages" ("id" SERIAL NOT NULL, "conversationId" uuid NOT NULL, "senderId" uuid NOT NULL, "status" character varying NOT NULL DEFAULT 'pending', "text" character varying, "images" text array, "createdDate" TIMESTAMP NOT NULL DEFAULT now(), "updatedDate" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_18325f38ae6de43878487eff986" PRIMARY KEY ("id"))`,
         );
         await queryRunner.query(
             `CREATE TABLE "reviews" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "content" character varying NOT NULL, "rating" integer NOT NULL DEFAULT '0', "userId" uuid NOT NULL, "assessorId" uuid NOT NULL, "createdDate" TIMESTAMP NOT NULL DEFAULT now(), "updatedDate" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "UQ_71df63bb36cc008a73f84aa4ed5" UNIQUE ("content"), CONSTRAINT "PK_231ae565c273ee700b283f15c1d" PRIMARY KEY ("id"))`,
@@ -69,6 +69,9 @@ export class initizalize1681282779301 implements MigrationInterface {
         );
         await queryRunner.query(
             `ALTER TABLE "conversations" ADD CONSTRAINT "FK_d257b02798f8d3f854175a9aa92" FOREIGN KEY ("member2Id") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+        );
+        await queryRunner.query(
+            `ALTER TABLE "conversations" ADD CONSTRAINT "FK_c03ddf58baac0cc81d4d753a675" FOREIGN KEY ("articleId") REFERENCES "articles"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
         );
         await queryRunner.query(
             `ALTER TABLE "messages" ADD CONSTRAINT "FK_e5663ce0c730b2de83445e2fd19" FOREIGN KEY ("conversationId") REFERENCES "conversations"("id") ON DELETE CASCADE ON UPDATE NO ACTION`,
@@ -126,6 +129,9 @@ export class initizalize1681282779301 implements MigrationInterface {
         );
         await queryRunner.query(
             `ALTER TABLE "messages" DROP CONSTRAINT "FK_e5663ce0c730b2de83445e2fd19"`,
+        );
+        await queryRunner.query(
+            `ALTER TABLE "conversations" DROP CONSTRAINT "FK_c03ddf58baac0cc81d4d753a675"`,
         );
         await queryRunner.query(
             `ALTER TABLE "conversations" DROP CONSTRAINT "FK_d257b02798f8d3f854175a9aa92"`,

@@ -177,6 +177,8 @@ const main = async () => {
         }),
     );
 
+    app.set('trust proxy', 1);
+
     // setting up apollo server
     const server = new ApolloServer({
         schema: await buildSchema({

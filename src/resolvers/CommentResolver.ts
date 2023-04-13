@@ -98,6 +98,10 @@ export default class CommentResolver {
                 findOptions,
             );
 
+            if (comments.length === 0) {
+                return null;
+            }
+
             return {
                 totalCount: totalCount,
                 cursor: comments[comments.length - 1].createdDate,
