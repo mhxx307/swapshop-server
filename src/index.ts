@@ -82,9 +82,9 @@ const main = async () => {
                   host: process.env.HOST_DB,
               }
             : {
-                  database: 'second_chance_db',
+                  database: 'swapshopdb',
                   username: 'postgres',
-                  password: '123456',
+                  password: '123456789',
               }),
         logging: true,
         ...(__prod__
