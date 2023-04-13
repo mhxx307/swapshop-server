@@ -13,6 +13,8 @@ import {
 import { IMyContext } from '../types/context';
 import { ConversationMutationResponse } from '../types/response';
 import { checkAuth } from '../middleware/session';
+import { showError } from '../utils';
+import { In } from 'typeorm';
 
 @Resolver(() => Conversation)
 export default class ConversationResolver {
@@ -149,6 +151,26 @@ export default class ConversationResolver {
             return conversation || null;
         } catch (error) {
             return null;
+        }
+    }
+
+    @Mutation(() => ConversationMutationResponse)
+    @UseMiddleware(checkAuth)
+    async removeFromConversation(
+        @Arg('conversationIds', () => [String]) conversationIds: string[],
+    ): Promise<ConversationMutationResponse> {
+        try {
+            await Conversation.delete({
+                id: In(conversationIds),
+            });
+
+            return {
+                code: 200,
+                success: true,
+                message: 'Conversation removed successfully',
+            };
+        } catch (error) {
+            return showError(error);
         }
     }
 }
