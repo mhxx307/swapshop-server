@@ -14,6 +14,7 @@ import {
     ApolloServerPluginLandingPageLocalDefault,
     ApolloServerPluginLandingPageProductionDefault,
 } from '@apollo/server/plugin/landingPage/default';
+import { ApolloServerPluginLandingPageDisabled } from '@apollo/server/plugin/disabled';
 
 import path from 'path';
 import {
@@ -203,6 +204,7 @@ const main = async () => {
                       includeCookies: true,
                   }),
         ],
+        introspection: true,
     });
     await server.start();
 
