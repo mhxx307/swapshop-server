@@ -52,6 +52,7 @@ import {
 } from './constants';
 import { IMyContext } from './types/context';
 import { createConnection } from 'typeorm';
+import { v4 } from 'uuid';
 // import PostgresDataSource from './data-source';
 
 const main = async () => {
@@ -159,11 +160,15 @@ const main = async () => {
     });
 
     app.set('trust proxy', 1);
+    app.enable('trust proxy');
 
     app.use(
         session({
-            name: COOKIE_NAME,
-            secret: process.env.SESSION_SECRET as string,
+            genid: () => {
+                return v4(); // use UUIDs for session IDs
+            },
+            name: 'express-session',
+            secret: 'my secret',
             cookie: {
                 maxAge: COOKIE_MAX_AGE,
                 httpOnly: true,
@@ -176,7 +181,8 @@ const main = async () => {
             // * https://www.npmjs.com/package/express-session#resave
             // * https://www.npmjs.com/package/express-session#saveuninitialized
             resave: false,
-            saveUninitialized: false, // do not save empty sessions, right from the start
+            saveUninitialized: false, // do not save empty sessions, right from the start,
+            proxy: true,
         }),
     );
 
