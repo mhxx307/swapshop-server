@@ -17,6 +17,9 @@ export default class InsertArticleInput {
     @Field()
     productName!: string;
 
-    @Field({ nullable: true })
+    @Field({ defaultValue: '0' })
     price: string;
+
+    @Field()
+    address: string;
 }

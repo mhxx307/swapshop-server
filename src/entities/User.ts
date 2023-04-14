@@ -97,6 +97,10 @@ export default class User extends BaseEntity {
     rating: number;
 
     @Field()
+    @Column({ default: false })
+    isVerified: boolean;
+
+    @Field()
     @CreateDateColumn()
     createdDate: Date;
 

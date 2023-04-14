@@ -16,7 +16,6 @@ import User from './User';
 import Comment from './Comment';
 import Category from './Category';
 import Favorite from './Favorite';
-import Message from './Message';
 import Conversation from './Conversation';
 import Report from './Report';
 
@@ -106,9 +105,9 @@ export default class Article extends BaseEntity {
     })
     views: number;
 
-    // @Field()
-    // @Column()
-    // address: string;
+    @Field()
+    @Column()
+    address: string;
 
     @Field()
     @CreateDateColumn({ type: 'timestamptz' })
