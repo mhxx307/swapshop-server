@@ -60,7 +60,6 @@ export default class UserResolver {
     @UseMiddleware(checkAlreadyLogin)
     async register(
         @Arg('registerInput') registerInput: RegisterInput,
-        @Ctx() { req }: IMyContext,
     ): Promise<UserMutationResponse> {
         const validateRegisterInputErrors =
             validateRegisterInput(registerInput);
@@ -73,41 +72,29 @@ export default class UserResolver {
             };
 
         try {
-            const {
-                username,
-                password,
-                email,
-                address,
-                phoneNumber,
-                birthday,
-                fullName,
-            } = registerInput;
+            const { username, password, email, fullName } = registerInput;
 
             const existingUser = await User.findOne({
-                where: [{ username }, { email }, { phoneNumber }],
+                where: [{ username }, { email }],
             });
 
             if (existingUser)
                 return {
                     code: 400,
                     success: false,
-                    message: 'Duplicated username, email or phone number',
+                    message: 'Duplicated username, email',
                     errors: [
                         {
                             field: `${
                                 (existingUser.username === username &&
                                     'username') ||
-                                (existingUser.email === email && 'email') ||
-                                (existingUser.phoneNumber === phoneNumber &&
-                                    'phone number')
+                                (existingUser.email === email && 'email')
                             }`,
                             message: `${
                                 (existingUser.username === username &&
                                     `Username ${username}`) ||
                                 (existingUser.email === email &&
-                                    `Email ${email}`) ||
-                                (existingUser.phoneNumber === phoneNumber &&
-                                    `Phone number ${phoneNumber}`)
+                                    `Email ${email}`)
                             } already taken`,
                         },
                     ],
@@ -119,10 +106,7 @@ export default class UserResolver {
                 username,
                 password: hashPassword,
                 email,
-                address,
-                phoneNumber,
                 fullName,
-                birthday,
             });
 
             const savedUser = await newUser.save();
@@ -135,13 +119,99 @@ export default class UserResolver {
                 roleId: role?.id,
             }).save();
 
-            req.session.userId = savedUser.id;
+            // start: Send email to user
+            await TokenModel.findOneAndDelete({ userId: `${savedUser.id}` });
+
+            const verifyToken = uuidv4();
+            const hashedVerifyToken = await argon2.hash(verifyToken);
+
+            await new TokenModel({
+                userId: `${savedUser.id}`,
+                token: hashedVerifyToken,
+            }).save();
+
+            await sendEmail(
+                email,
+                `<a href="http://localhost:3000/verify-email?token=${verifyToken}&userId=${savedUser.id}">Click here to verify your email</a> - Do not send this link to other`,
+                'Verify your email',
+            );
+            // end: Send email to user
 
             return {
                 code: 200,
                 success: true,
                 message: 'User registration successfully',
                 user: savedUser,
+            };
+        } catch (error) {
+            return showError(error);
+        }
+    }
+
+    @Mutation(() => UserMutationResponse)
+    async verifyEmail(
+        @Arg('token') token: string,
+        @Arg('userId') userId: string,
+    ): Promise<UserMutationResponse> {
+        try {
+            const verifyTokenRecord = await TokenModel.findOne({
+                userId,
+            });
+
+            if (!verifyTokenRecord) {
+                return {
+                    code: 400,
+                    success: false,
+                    message: 'Invalid or expired verify token',
+                    errors: [
+                        {
+                            field: 'token',
+                            message: 'Invalid or expired verify token',
+                        },
+                    ],
+                };
+            }
+
+            const verifyTokenValid = argon2.verify(
+                verifyTokenRecord.token,
+                token,
+            );
+
+            if (!verifyTokenValid) {
+                return {
+                    code: 400,
+                    success: false,
+                    message: 'Invalid or expired verify token',
+                    errors: [
+                        {
+                            field: 'token',
+                            message: 'Invalid or expired verify token',
+                        },
+                    ],
+                };
+            }
+
+            const user = await User.findOne({ where: { id: userId } });
+
+            if (!user) {
+                return {
+                    code: 400,
+                    success: false,
+                    message: 'User no longer exists',
+                    errors: [
+                        { field: 'token', message: 'User no longer exists' },
+                    ],
+                };
+            }
+
+            await User.update({ id: userId }, { isVerified: true });
+            await verifyTokenRecord.deleteOne();
+
+            return {
+                code: 200,
+                success: true,
+                message: 'User verify successfully',
+                user,
             };
         } catch (error) {
             return showError(error);
@@ -287,6 +357,14 @@ export default class UserResolver {
                 };
             }
 
+            if (existingUser.isVerified === false) {
+                return {
+                    code: 400,
+                    success: false,
+                    message: 'Your account is not verified',
+                };
+            }
+
             req.session.userId = existingUser.id;
 
             return {
@@ -357,6 +435,14 @@ export default class UserResolver {
                             message: 'Wrong password',
                         },
                     ],
+                };
+            }
+
+            if (existingUser.isVerified === false) {
+                return {
+                    code: 400,
+                    success: false,
+                    message: 'Your account is not verified',
                 };
             }
 
@@ -452,6 +538,7 @@ export default class UserResolver {
             await sendEmail(
                 email,
                 `<a href="http://localhost:3000/change-password?token=${resetToken}&userId=${user.id}">Click here to reset your password</a> - Do not send this link to other`,
+                'Change password',
             );
 
             return {

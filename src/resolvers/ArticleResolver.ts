@@ -67,6 +67,7 @@ export default class ArticleResolver {
                 productName,
                 images,
                 categoryIds,
+                address,
             } = insertArticleInput;
 
             const newArticle = Article.create({
@@ -78,6 +79,7 @@ export default class ArticleResolver {
                 userId: req.session.userId,
                 images,
                 categoryIds,
+                address,
             });
 
             return {

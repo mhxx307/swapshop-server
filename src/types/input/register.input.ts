@@ -11,15 +11,6 @@ export default class RegisterInput {
     @Field()
     password: string;
 
-    @Field({ nullable: true })
-    address: string;
-
-    @Field({ nullable: true })
-    phoneNumber: string;
-
     @Field()
     fullName: string;
-
-    @Field({ nullable: true })
-    birthday: string;
 }
