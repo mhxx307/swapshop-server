@@ -133,6 +133,7 @@ export default class UserResolver {
             await sendEmail(
                 email,
                 `<a href="http://localhost:3000/verify-email?token=${verifyToken}&userId=${savedUser.id}">Click here to verify your email</a> - Do not send this link to other`,
+                'Verify your email',
             );
             // end: Send email to user
 
@@ -205,7 +206,6 @@ export default class UserResolver {
 
             await User.update({ id: userId }, { isVerified: true });
             await verifyTokenRecord.deleteOne();
-            // req.session.userId = user.id;
 
             return {
                 code: 200,
@@ -538,6 +538,7 @@ export default class UserResolver {
             await sendEmail(
                 email,
                 `<a href="http://localhost:3000/change-password?token=${resetToken}&userId=${user.id}">Click here to reset your password</a> - Do not send this link to other`,
+                'Change password',
             );
 
             return {
