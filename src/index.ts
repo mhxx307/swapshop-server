@@ -46,9 +46,9 @@ import {
 } from './resolvers';
 import {
     COOKIE_MAX_AGE,
+    COOKIE_NAME,
     COLLECTION_SESSION_NAME,
     __prod__,
-    COOKIE_NAME,
 } from './constants';
 import { IMyContext } from './types/context';
 import { createConnection } from 'typeorm';
@@ -84,9 +84,9 @@ const main = async () => {
                   host: process.env.HOST_DB,
               }
             : {
-                  database: 'swapshopdb',
+                  database: 'second_chance_db',
                   username: 'postgres',
-                  password: '123456789',
+                  password: '123456',
               }),
         logging: true,
         ...(__prod__
@@ -144,6 +144,18 @@ const main = async () => {
         {
             uri: mongoUrl,
             collection: COLLECTION_SESSION_NAME,
+
+            // By default, sessions expire after 2 weeks. The `expires` option lets
+            // you overwrite that by setting the expiration in milliseconds
+            expires: 1000 * 60 * 60 * 24 * 30, // 30 days in milliseconds
+
+            // Lets you set options passed to `MongoClient.connect()`. Useful for
+            // configuring connectivity or working around deprecation warnings.
+            connectionOptions: {
+                useNewUrlParser: true,
+                useUnifiedTopology: true,
+                serverSelectionTimeoutMS: 10000,
+            },
         },
         (error: Error) => {
             if (error) {
@@ -162,6 +174,7 @@ const main = async () => {
     app.set('trust proxy', 1);
     app.enable('trust proxy');
 
+    const oneDay = 1000 * 60 * 60 * 24;
     app.use(
         session({
             genid: () => {
@@ -170,11 +183,11 @@ const main = async () => {
             name: 'express-session',
             secret: 'my secret',
             cookie: {
-                maxAge: COOKIE_MAX_AGE,
+                maxAge: oneDay,
                 httpOnly: true,
                 secure: __prod__, // cookie only work in https
                 sameSite: 'none', // protection against CSRF,
-                domain: __prod__ ? '.vercel.app' : undefined,
+                // domain: __prod__ ? '.vercel.app' : undefined,
             },
             store: store,
             // Boilerplate options, see:
@@ -236,6 +249,7 @@ const main = async () => {
             context: async ({ req, res }): Promise<IMyContext> => ({
                 req,
                 res,
+                connection,
                 dataLoaders: buildDataLoaders(),
             }),
         }),
