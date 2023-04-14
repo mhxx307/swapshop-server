@@ -14,7 +14,7 @@ import {
     ApolloServerPluginLandingPageLocalDefault,
     ApolloServerPluginLandingPageProductionDefault,
 } from '@apollo/server/plugin/landingPage/default';
-import { ApolloServerPluginLandingPageDisabled } from '@apollo/server/plugin/disabled';
+// import { ApolloServerPluginLandingPageDisabled } from '@apollo/server/plugin/disabled';
 
 import path from 'path';
 import {
@@ -158,6 +158,8 @@ const main = async () => {
         console.log(error);
     });
 
+    app.set('trust proxy', 1);
+
     app.use(
         session({
             name: COOKIE_NAME,
@@ -166,7 +168,8 @@ const main = async () => {
                 maxAge: COOKIE_MAX_AGE,
                 httpOnly: true,
                 secure: __prod__, // cookie only work in https
-                sameSite: 'lax', // protection against CSRF
+                sameSite: 'none', // protection against CSRF,
+                domain: __prod__ ? '.vercel.app' : undefined,
             },
             store: store,
             // Boilerplate options, see:
@@ -176,8 +179,6 @@ const main = async () => {
             saveUninitialized: false, // do not save empty sessions, right from the start
         }),
     );
-
-    app.set('trust proxy', 1);
 
     // setting up apollo server
     const server = new ApolloServer({
