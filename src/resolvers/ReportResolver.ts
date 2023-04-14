@@ -39,6 +39,8 @@ export default class ReportResolver {
     @UseMiddleware(checkAuth)
     async report(
         @Arg('articleId') articleId: string,
+        @Arg('description') description: string,
+        @Arg('reason') reason: string,
         @Ctx() { req }: IMyContext,
     ): Promise<ReportMutationResponse> {
         try {
@@ -72,6 +74,8 @@ export default class ReportResolver {
             const newReport = Report.create({
                 articleId,
                 userId: req.session.userId,
+                description,
+                reason,
             });
 
             return {

@@ -68,7 +68,7 @@ export default class CommentResolver {
         @Arg('articleId') articleId: string,
         @Arg('limit', () => Int) limit: number,
         @Arg('cursor', { nullable: true }) cursor?: string,
-    ): Promise<PaginatedComments | null> {
+    ): Promise<PaginatedComments> {
         const realLimit = Math.min(20, limit);
         try {
             const findOptions:
@@ -98,9 +98,7 @@ export default class CommentResolver {
                 findOptions,
             );
 
-            if (comments.length === 0) {
-                return null;
-            }
+            console.log(comments, totalCount);
 
             return {
                 totalCount: totalCount,
@@ -119,7 +117,12 @@ export default class CommentResolver {
             } else {
                 console.log('Unexpected error', error);
             }
-            return null;
+            return {
+                totalCount: 0,
+                cursor: null,
+                hasMore: false,
+                paginatedComments: null,
+            };
         }
     }
 

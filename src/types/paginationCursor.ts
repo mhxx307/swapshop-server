@@ -6,8 +6,8 @@ export class Paginated {
     @Field()
     totalCount!: number;
 
-    @Field((_type) => Date)
-    cursor!: Date;
+    @Field((_type) => Date, { nullable: true })
+    cursor: Date | null;
 
     @Field()
     hasMore!: boolean;
@@ -15,6 +15,6 @@ export class Paginated {
 
 @ObjectType()
 export class PaginatedComments extends Paginated {
-    @Field((_type) => [Comment])
-    paginatedComments!: Comment[];
+    @Field((_type) => [Comment], { nullable: true })
+    paginatedComments: Comment[] | null;
 }

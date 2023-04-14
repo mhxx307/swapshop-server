@@ -22,6 +22,10 @@ export default class Report extends BaseEntity {
     @Column()
     reason!: string;
 
+    @Field((_type) => String)
+    @Column()
+    description!: string;
+
     @Column()
     articleId!: string;
 
