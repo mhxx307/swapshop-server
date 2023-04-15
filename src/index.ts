@@ -84,9 +84,9 @@ const main = async () => {
                   host: process.env.HOST_DB,
               }
             : {
-                  database: 'second_chance_db',
+                  database: 'swapshopdb',
                   username: 'postgres',
-                  password: '123456',
+                  password: '123456789',
               }),
         logging: true,
         ...(__prod__
@@ -186,7 +186,7 @@ const main = async () => {
                 maxAge: oneDay,
                 httpOnly: true,
                 secure: __prod__, // cookie only work in https
-                sameSite: 'none', // protection against CSRF,
+                sameSite: __prod__ ? 'none' : 'lax', // protection against CSRF,
                 // domain: __prod__ ? '.vercel.app' : undefined,
             },
             store: store,
