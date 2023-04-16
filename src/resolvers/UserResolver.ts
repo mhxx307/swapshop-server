@@ -152,6 +152,7 @@ export default class UserResolver {
     async verifyEmail(
         @Arg('token') token: string,
         @Arg('userId') userId: string,
+        @Ctx() { req }: IMyContext,
     ): Promise<UserMutationResponse> {
         try {
             const verifyTokenRecord = await TokenModel.findOne({
@@ -206,7 +207,7 @@ export default class UserResolver {
 
             await User.update({ id: userId }, { isVerified: true });
             await verifyTokenRecord.deleteOne();
-
+            req.session.userId = userId;
             return {
                 code: 200,
                 success: true,
