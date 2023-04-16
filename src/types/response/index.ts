@@ -10,3 +10,4 @@ export { default as FavoriteMutationResponse } from './favorite.mutation-respons
 export { default as ConversationMutationResponse } from './conversation.mutation-response';
 export { default as MessageMutationResponse } from './message.mutation-response';
 export { default as ReportMutationResponse } from './report.mutation-response';
+export { default as NotificationMutationResponse } from './notification.mutation-response';
