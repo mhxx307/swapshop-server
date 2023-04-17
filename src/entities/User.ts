@@ -16,6 +16,7 @@ import {
     Favorite,
     Conversation,
     Review,
+    Notification,
 } from '.';
 import { STATUS_USER } from '../constants/user';
 import Report from './Report';
@@ -79,6 +80,9 @@ export default class User extends BaseEntity {
 
     @OneToMany(() => Favorite, (favorite) => favorite.user)
     favorites: Favorite[];
+
+    @OneToMany(() => Favorite, (favorite) => favorite.user)
+    notifications: Notification[];
 
     @OneToMany(() => Conversation, (conversation) => conversation.member1)
     conversations1: Conversation[];

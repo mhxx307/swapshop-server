@@ -29,6 +29,7 @@ import {
     User,
     UserRole,
     Report,
+    Notification,
 } from './entities';
 
 import {
@@ -43,6 +44,7 @@ import {
     ConversationResolver,
     ReviewResolver,
     ReportResolver,
+    NotificationResolver,
 } from './resolvers';
 import {
     COOKIE_MAX_AGE,
@@ -112,6 +114,7 @@ const main = async () => {
             Conversation,
             Review,
             Report,
+            Notification,
         ],
         migrations: [path.join(__dirname, '/migrations/*')],
         cli: {
@@ -174,16 +177,15 @@ const main = async () => {
     app.set('trust proxy', 1);
     app.enable('trust proxy');
 
-    const oneDay = 1000 * 60 * 60 * 24;
     app.use(
         session({
             genid: () => {
                 return v4(); // use UUIDs for session IDs
             },
-            name: 'express-session',
-            secret: 'my secret',
+            name: COOKIE_NAME,
+            secret: process.env.SESSION_SECRET as string,
             cookie: {
-                maxAge: oneDay,
+                maxAge: COOKIE_MAX_AGE,
                 httpOnly: true,
                 secure: __prod__, // cookie only work in https
                 sameSite: __prod__ ? 'none' : 'lax', // protection against CSRF,
@@ -214,6 +216,7 @@ const main = async () => {
                 ConversationResolver,
                 ReviewResolver,
                 ReportResolver,
+                NotificationResolver,
             ],
             validate: false,
         }),
