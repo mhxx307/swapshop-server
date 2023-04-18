@@ -13,6 +13,7 @@ import {
 import { showError } from '../utils';
 import { NotificationMutationResponse } from '../types/response';
 import { IMyContext } from 'src/types/context';
+import { In } from 'typeorm';
 
 export default class NotificationResolver {
     @Subscription(() => NotificationMutationResponse, {
@@ -100,24 +101,6 @@ export default class NotificationResolver {
         }
     }
 
-    // @Query(() => [Notification], { nullable: true })
-    // async notificationsPrivate(
-    //     @Ctx() { req }: IMyContext,
-    // ): Promise<Notification[] | null> {
-    //     return await Notification.find({
-    //         where: { userId: req.session.userId },
-    //         order: { createdDate: 'DESC' },
-    //     });
-    // }
-
-    // @Query(() => [Notification], { nullable: true })
-    // async notificationsPublic(): Promise<Notification[] | null> {
-    //     return await Notification.find({
-    //         where: { userId: null },
-    //         order: { createdDate: 'DESC' },
-    //     });
-    // }
-
     @Query(() => [Notification], { nullable: true })
     async notifications(
         @Ctx() { req }: IMyContext,
@@ -136,60 +119,18 @@ export default class NotificationResolver {
     }
 
     @Mutation(() => NotificationMutationResponse)
-    async deleteNotification(
-        @Arg('id') id: string,
-    ): Promise<NotificationMutationResponse> {
-        try {
-            const notification = await Notification.findOne({ where: { id } });
-
-            if (!notification) {
-                return {
-                    code: 404,
-                    success: false,
-                    message: 'Notification not found',
-                };
-            }
-
-            await notification.remove();
-
-            return {
-                code: 200,
-                success: true,
-                message: 'Notification deleted successfully',
-            };
-        } catch (error) {
-            return showError(error);
-        }
-    }
-
-    @Mutation(() => NotificationMutationResponse)
-    async deleteAllNotifications(): Promise<NotificationMutationResponse> {
-        try {
-            await Notification.delete({});
-
-            return {
-                code: 200,
-                success: true,
-                message: 'All notifications deleted successfully',
-            };
-        } catch (error) {
-            return showError(error);
-        }
-    }
-
-    @Mutation(() => NotificationMutationResponse)
-    async deleteAllNotificationsPrivate(
-        @Ctx() { req }: IMyContext,
+    async deleteNotifications(
+        @Arg('ids', () => [String]) ids: string[],
     ): Promise<NotificationMutationResponse> {
         try {
             await Notification.delete({
-                userId: req.session.userId,
+                id: In(ids),
             });
 
             return {
                 code: 200,
                 success: true,
-                message: 'All private notifications deleted successfully',
+                message: 'Notification deleted successfully',
             };
         } catch (error) {
             return showError(error);
