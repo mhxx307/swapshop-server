@@ -12,7 +12,7 @@ import {
 } from 'type-graphql';
 import { v4 as uuidv4 } from 'uuid';
 
-import { COOKIE_NAME, USER_ROLES } from '../constants';
+import { COOKIE_NAME, USER_ROLES, __prod__ } from '../constants';
 import { Role, User, UserRole } from '../entities';
 import {
     checkAdmin,
@@ -132,7 +132,13 @@ export default class UserResolver {
 
             await sendEmail(
                 email,
-                `<a href="http://localhost:3000/verify-email?token=${verifyToken}&userId=${savedUser.id}">Click here to verify your email</a> - Do not send this link to other`,
+                `<a href="${
+                    __prod__
+                        ? 'https://secondchance.vercel.app/'
+                        : 'http://localhost:3000/'
+                }verify-email?token=${verifyToken}&userId=${
+                    savedUser.id
+                }">Click here to verify your email</a> - Do not send this link to other`,
                 'Verify your email',
             );
             // end: Send email to user
@@ -538,7 +544,13 @@ export default class UserResolver {
             // send reset password link to user via email
             await sendEmail(
                 email,
-                `<a href="http://localhost:3000/change-password?token=${resetToken}&userId=${user.id}">Click here to reset your password</a> - Do not send this link to other`,
+                `<a href="${
+                    __prod__
+                        ? 'https://secondchance.vercel.app/'
+                        : 'http://localhost:3000/'
+                }change-password?token=${resetToken}&userId=${
+                    user.id
+                }">Click here to reset your password</a> - Do not send this link to other`,
                 'Change password',
             );
 
