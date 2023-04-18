@@ -14,7 +14,8 @@ import {
     ApolloServerPluginLandingPageLocalDefault,
     ApolloServerPluginLandingPageProductionDefault,
 } from '@apollo/server/plugin/landingPage/default';
-// import { ApolloServerPluginLandingPageDisabled } from '@apollo/server/plugin/disabled';
+import ws from 'ws';
+import { useServer } from 'graphql-ws/lib/use/ws';
 
 import path from 'path';
 import {
@@ -55,10 +56,12 @@ import {
 import { IMyContext } from './types/context';
 import { createConnection } from 'typeorm';
 import { v4 } from 'uuid';
+import { createServer } from 'http';
 // import PostgresDataSource from './data-source';
 
 const main = async () => {
     const app = express();
+    const server = createServer(app);
 
     app.use(
         cors({
@@ -86,9 +89,9 @@ const main = async () => {
                   host: process.env.HOST_DB,
               }
             : {
-                  database: 'swapshopdb',
+                  database: 'second_chance_db',
                   username: 'postgres',
-                  password: '123456789',
+                  password: '123456',
               }),
         logging: true,
         ...(__prod__
@@ -202,24 +205,25 @@ const main = async () => {
     );
 
     // setting up apollo server
-    const server = new ApolloServer({
-        schema: await buildSchema({
-            resolvers: [
-                UserResolver,
-                ArticleResolver,
-                CommentResolver,
-                CategoryResolver,
-                RoleResolver,
-                UserRoleResolver,
-                FavoriteResolver,
-                MessageResolver,
-                ConversationResolver,
-                ReviewResolver,
-                ReportResolver,
-                NotificationResolver,
-            ],
-            validate: false,
-        }),
+    const schema = await buildSchema({
+        resolvers: [
+            UserResolver,
+            ArticleResolver,
+            CommentResolver,
+            CategoryResolver,
+            RoleResolver,
+            UserRoleResolver,
+            FavoriteResolver,
+            MessageResolver,
+            ConversationResolver,
+            ReviewResolver,
+            ReportResolver,
+            NotificationResolver,
+        ],
+        validate: false,
+    });
+    const apolloServer = new ApolloServer({
+        schema: schema,
         plugins: [
             __prod__
                 ? ApolloServerPluginLandingPageProductionDefault({
@@ -228,10 +232,25 @@ const main = async () => {
                 : ApolloServerPluginLandingPageLocalDefault({
                       includeCookies: true,
                   }),
+            {
+                async serverWillStart() {
+                    return {
+                        async drainServer() {
+                            wsServer.close();
+                        },
+                    };
+                },
+            },
         ],
         introspection: true,
     });
-    await server.start();
+
+    const wsServer = new ws.Server({
+        server,
+        path: '/graphql',
+    });
+
+    await apolloServer.start();
 
     app.use(
         '/graphql',
@@ -248,7 +267,7 @@ const main = async () => {
             credentials: true,
         }),
         express.json(),
-        expressMiddleware(server, {
+        expressMiddleware(apolloServer, {
             context: async ({ req, res }): Promise<IMyContext> => ({
                 req,
                 res,
@@ -260,7 +279,10 @@ const main = async () => {
 
     // run server
     const PORT = process.env.PORT || 4000;
-    app.listen(PORT, () => console.log(`server started on port ${PORT}`));
+    server.listen(PORT, () => {
+        useServer({ schema }, wsServer);
+        console.log(`server started on port ${PORT}`);
+    });
 };
 
 main();

@@ -50,12 +50,13 @@ export default class MessageResolver {
                 text,
                 images,
             });
+            const createdMessage = await newMessage.save();
 
             return {
                 code: 200,
                 success: true,
                 message: 'Message created successfully',
-                createdMessage: await newMessage.save(),
+                createdMessage: createdMessage,
             };
         } catch (error) {
             return showError(error);

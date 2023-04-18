@@ -18,13 +18,13 @@ export default class Notification extends BaseEntity {
     id!: string;
 
     @Field()
-    @Column({ unique: true })
+    @Column()
     content!: string;
 
+    @Field({ nullable: true })
     @Column({ nullable: true })
     userId: string;
 
-    @Field()
     @ManyToOne(() => User, (user) => user.notifications, { nullable: true })
     user: User;
 

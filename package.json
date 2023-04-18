@@ -26,6 +26,7 @@
         "@types/node": "^18.11.18",
         "@types/nodemailer": "^6.4.7",
         "@types/uuid": "^9.0.0",
+        "@types/ws": "^8.5.4",
         "@typescript-eslint/eslint-plugin": "^5.54.0",
         "@typescript-eslint/parser": "^5.54.0",
         "eslint": "^8.35.0",
@@ -50,13 +51,15 @@
         "express": "^4.18.2",
         "express-session": "^1.17.3",
         "graphql": "^16.6.0",
+        "graphql-ws": "^5.12.1",
         "mongoose": "^6.9.0",
         "nodemailer": "^6.9.1",
         "pg": "^8.9.0",
         "reflect-metadata": "^0.1.13",
         "type-graphql": "^2.0.0-beta.1",
         "typeorm": "^0.2.34",
-        "uuid": "^9.0.0"
+        "uuid": "^9.0.0",
+        "ws": "^8.13.0"
     },
     "config": {
         "commitizen": {
