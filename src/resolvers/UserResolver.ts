@@ -132,13 +132,7 @@ export default class UserResolver {
 
             await sendEmail(
                 email,
-                `<a href="${
-                    __prod__
-                        ? 'https://secondchance.vercel.app/'
-                        : 'http://localhost:3000/'
-                }verify-email?token=${verifyToken}&userId=${
-                    savedUser.id
-                }">Click here to verify your email</a> - Do not send this link to other`,
+                `<a href="https://secondchance.vercel.app/verify-email?token=${verifyToken}&userId=${savedUser.id}">Click here to verify your email</a> - Do not send this link to other`,
                 'Verify your email',
             );
             // end: Send email to user
