@@ -247,7 +247,7 @@ const main = async () => {
 
     const wsServer = new ws.Server({
         server,
-        path: '/graphql',
+        path: '/',
     });
 
     await apolloServer.start();
@@ -280,7 +280,16 @@ const main = async () => {
     // run server
     const PORT = process.env.PORT || 4000;
     server.listen(PORT, () => {
-        useServer({ schema }, wsServer);
+        useServer(
+            {
+                schema,
+                context: async () => ({
+                    connection,
+                    dataLoaders: buildDataLoaders(),
+                }),
+            },
+            wsServer,
+        );
         console.log(`server started on port ${PORT}`);
     });
 };

@@ -1,11 +1,13 @@
-import { Notification } from '../entities';
+import { Notification, User } from '../entities';
 import {
     Arg,
     Ctx,
+    FieldResolver,
     Mutation,
     PubSub,
     PubSubEngine,
     Query,
+    Resolver,
     Root,
     Subscription,
 } from 'type-graphql';
@@ -15,7 +17,16 @@ import { NotificationMutationResponse } from '../types/response';
 import { IMyContext } from 'src/types/context';
 import { In } from 'typeorm';
 
+@Resolver(() => Notification)
 export default class NotificationResolver {
+    @FieldResolver(() => User)
+    async user(
+        @Root() root: Notification,
+        @Ctx() { dataLoaders: { userLoader } }: IMyContext,
+    ) {
+        return await userLoader.load(root.userId);
+    }
+
     @Subscription(() => NotificationMutationResponse, {
         topics: 'NOTIFICATIONS_PRIVATE', // topic for comments/messages
         filter: ({ payload, args }) => {
