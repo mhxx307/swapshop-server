@@ -4,9 +4,12 @@ import {
     Ctx,
     FieldResolver,
     Mutation,
+    PubSub,
+    PubSubEngine,
     Query,
     Resolver,
     Root,
+    Subscription,
     UseMiddleware,
 } from 'type-graphql';
 
@@ -34,29 +37,41 @@ export default class MessageResolver {
         return await conversationLoader.load(root.conversationId);
     }
 
-    // add new message
-    @Mutation(() => MessageMutationResponse)
-    @UseMiddleware(checkAuth)
-    async newMessage(
-        @Arg('insertMessageInput') insertMessageInput: InsertMessageInput,
+    // save new message
+    @Subscription(() => MessageMutationResponse, {
+        topics: 'SEND_MESSAGE_PRIVATE', // topic for comments/messages
+    })
+    async messageIncoming(
+        @Root() payload: InsertMessageInput,
     ): Promise<MessageMutationResponse> {
         try {
-            const { conversationId, senderId, text, images } =
-                insertMessageInput;
-
-            const newMessage = Message.create({
-                senderId,
-                conversationId,
-                text,
-                images,
-            });
-            const createdMessage = await newMessage.save();
+            const newMessage = Message.create(payload);
 
             return {
                 code: 200,
                 success: true,
                 message: 'Message created successfully',
-                createdMessage: createdMessage,
+                createdMessage: await newMessage.save(),
+            };
+        } catch (error) {
+            return showError(error);
+        }
+    }
+
+    // add new message
+    @Mutation(() => MessageMutationResponse)
+    @UseMiddleware(checkAuth)
+    async insertMessage(
+        @Arg('insertMessageInput') insertMessageInput: InsertMessageInput,
+        @PubSub() pubSub: PubSubEngine,
+    ): Promise<MessageMutationResponse> {
+        try {
+            await pubSub.publish('SEND_MESSAGE_PRIVATE', insertMessageInput);
+
+            return {
+                code: 200,
+                success: true,
+                message: 'Message inserted successfully',
             };
         } catch (error) {
             return showError(error);
@@ -69,7 +84,29 @@ export default class MessageResolver {
     async messages(
         @Arg('conversationId') conversationId: string,
     ): Promise<Message[] | null> {
-        return await Message.find({ where: { conversationId } });
+        return await Message.find({
+            where: { conversationId },
+            order: { createdDate: 'ASC' },
+        });
+    }
+
+    @Subscription(() => MessageMutationResponse, {
+        topics: 'DELETED_MESSAGE', // topic for comments/messages
+    })
+    async deletedMessage(
+        @Root() payload: Message,
+    ): Promise<MessageMutationResponse> {
+        try {
+            await Message.remove(payload);
+
+            return {
+                code: 200,
+                success: true,
+                message: 'Message deleted successfully',
+            };
+        } catch (error) {
+            return showError(error);
+        }
     }
 
     // remove message
@@ -78,6 +115,7 @@ export default class MessageResolver {
     async removeMessage(
         @Arg('messageId') messageId: string,
         @Ctx() { req }: IMyContext,
+        @PubSub() pubSub: PubSubEngine,
     ): Promise<MessageMutationResponse> {
         try {
             const message = await Message.findOne({ where: { id: messageId } });
@@ -98,12 +136,32 @@ export default class MessageResolver {
                 };
             }
 
-            await Message.remove(message);
+            await pubSub.publish('DELETED_MESSAGE', message);
 
             return {
                 code: 200,
                 success: true,
                 message: 'Message deleted successfully',
+            };
+        } catch (error) {
+            return showError(error);
+        }
+    }
+
+    @Subscription(() => MessageMutationResponse, {
+        topics: 'UPDATED_MESSAGE', // topic for comments/messages
+    })
+    async updatedMessage(
+        @Root() payload: Message,
+    ): Promise<MessageMutationResponse> {
+        try {
+            await payload.save();
+
+            return {
+                code: 200,
+                success: true,
+                message: 'Message updated successfully',
+                createdMessage: payload,
             };
         } catch (error) {
             return showError(error);
@@ -117,6 +175,7 @@ export default class MessageResolver {
         @Arg('messageId') messageId: string,
         @Arg('text') text: string,
         @Ctx() { req }: IMyContext,
+        @PubSub() pubSub: PubSubEngine,
     ): Promise<MessageMutationResponse> {
         try {
             const message = await Message.findOne({ where: { id: messageId } });
@@ -139,11 +198,12 @@ export default class MessageResolver {
 
             message.text = text;
 
+            await pubSub.publish('UPDATED_MESSAGE', message);
+
             return {
                 code: 200,
                 success: true,
                 message: 'Message updated successfully',
-                createdMessage: await message.save(),
             };
         } catch (error) {
             return showError(error);

@@ -11,6 +11,6 @@ export default class InsertMessageInput {
     @Field()
     senderId: string;
 
-    @Field(() => [String])
-    images!: string[];
+    @Field(() => [String], { nullable: true })
+    images: string[];
 }

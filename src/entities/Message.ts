@@ -16,7 +16,7 @@ import Conversation from './Conversation';
 @Entity('messages')
 export default class Message extends BaseEntity {
     @Field((_type) => ID)
-    @PrimaryGeneratedColumn()
+    @PrimaryGeneratedColumn('uuid')
     id!: string;
 
     @Field()
