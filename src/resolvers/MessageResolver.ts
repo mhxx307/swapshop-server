@@ -42,16 +42,14 @@ export default class MessageResolver {
         topics: 'SEND_MESSAGE_PRIVATE', // topic for comments/messages
     })
     async messageIncoming(
-        @Root() payload: InsertMessageInput,
+        @Root() payload: Message,
     ): Promise<MessageMutationResponse> {
         try {
-            const newMessage = Message.create(payload);
-
             return {
                 code: 200,
                 success: true,
                 message: 'Message created successfully',
-                createdMessage: await newMessage.save(),
+                createdMessage: payload,
             };
         } catch (error) {
             return showError(error);
@@ -66,7 +64,11 @@ export default class MessageResolver {
         @PubSub() pubSub: PubSubEngine,
     ): Promise<MessageMutationResponse> {
         try {
-            await pubSub.publish('SEND_MESSAGE_PRIVATE', insertMessageInput);
+            const newMessage = Message.create(insertMessageInput);
+            console.log('test', newMessage);
+
+            const message = await newMessage.save();
+            await pubSub.publish('SEND_MESSAGE_PRIVATE', message);
 
             return {
                 code: 200,
