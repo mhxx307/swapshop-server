@@ -27,4 +27,7 @@ export class ReviewOptions {
 
     @Field(() => String || Number, { nullable: true })
     page?: string | number;
+
+    @Field(() => String, { nullable: true })
+    userId!: string;
 }

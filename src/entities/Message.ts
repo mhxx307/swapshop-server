@@ -45,7 +45,7 @@ export default class Message extends BaseEntity {
 
     @Field({ nullable: true })
     @Column({ nullable: true })
-    text!: string;
+    text: string;
 
     @Field(() => [String], { nullable: true })
     @Column('text', { array: true, nullable: true })

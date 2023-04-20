@@ -157,16 +157,17 @@ export default class ReviewResolver {
         @Arg('reviewOptions') reviewOptions: ReviewOptions,
     ): Promise<ReviewResponseSuccess> {
         try {
-            const { limit, page = 1 } = reviewOptions;
+            const { limit, page = 1, userId } = reviewOptions;
 
             const realLimit = Math.min(30, Number(limit) || 30);
 
-            const findOptions:
-                | FindManyOptions<Review>
-                | { [key: string]: unknown } = {
+            const findOptions: FindManyOptions<Review> = {
                 take: realLimit,
             };
-
+            if (userId) {
+                findOptions.where = {};
+                findOptions.where.userId = userId;
+            }
             findOptions.skip = Number(page) * realLimit - realLimit;
 
             findOptions.take = realLimit;
