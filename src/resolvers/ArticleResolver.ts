@@ -101,7 +101,6 @@ export default class ArticleResolver {
             const {
                 limit,
                 categories,
-                isFree,
                 title,
                 price_max,
                 price_min,
@@ -121,6 +120,8 @@ export default class ArticleResolver {
                 where: {},
             };
 
+            findOptions.where = {};
+
             // Add a condition to filter by the rating attribute in the User entity
             if (user_rating) {
                 findOptions.where = {
@@ -128,50 +129,54 @@ export default class ArticleResolver {
                 };
             }
 
-            if (userId || status) {
-                findOptions.where = {};
-
-                if (status) {
-                    findOptions.where.status = status;
-                }
-
-                if (userId) {
-                    findOptions.where.userId = userId;
-                }
-            }
-
             if (categories && categories.length > 0) {
                 const categoryIds = categories.map((category) => [category]);
-                findOptions.where = {
-                    categoryIds: In(categoryIds),
-                };
+                // findOptions.where = {
+                //     categoryIds: In(categoryIds),
+                // };
+                findOptions.where.categoryIds = In(categoryIds);
             }
 
             if (title) {
-                findOptions.where = {
-                    title: Like(`%${title}%`),
-                };
-            }
-
-            if (isFree) {
-                findOptions.where = {
-                    price: 0,
-                };
+                // findOptions.where = {
+                //     title: Like(`%${title}%`),
+                // };
+                findOptions.where.title = Like(`%${title}%`);
             }
 
             // wrong in between, need add address
             if (Number(price_min) && Number(price_max)) {
-                findOptions.where = {
-                    price: Between(Number(price_min), Number(price_max)),
-                };
+                // findOptions.where = {
+                //     price: Between(Number(price_min), Number(price_max)),
+                // };
+                findOptions.where.price = Between(
+                    Number(price_min),
+                    Number(price_max),
+                );
             } else if (Number(price_min)) {
-                findOptions.where = {
-                    price: MoreThanOrEqual(Number(price_min)),
-                };
+                // findOptions.where = {
+                //     price: MoreThanOrEqual(Number(price_min)),
+                // };
+                findOptions.where.price = MoreThanOrEqual(Number(price_min));
             } else if (Number(price_max)) {
-                findOptions.where = {
-                    price: LessThanOrEqual(Number(price_max)),
-                };
+                // findOptions.where = {
+                //     price: LessThanOrEqual(Number(price_max)),
+                // };
+                findOptions.where.price = LessThanOrEqual(Number(price_max));
+            }
+
+            if (status) {
+                // findOptions.where = {
+                //     status,
+                // };
+                findOptions.where.status = status;
+            }
+
+            if (userId) {
+                // findOptions.where = {
+                //     userId,
+                // };
+                findOptions.where.userId = userId;
             }
 
             if (!ORDER.includes(order_by as string)) {

@@ -41,9 +41,6 @@ export class QueryConfig {
     price_min?: string | number;
 
     @Field({ nullable: true })
-    isFree?: string;
-
-    @Field({ nullable: true })
     title?: string;
 
     @Field(() => String || Number, { nullable: true })
