@@ -5,7 +5,7 @@ export default class InsertMessageInput {
     @Field()
     conversationId: string;
 
-    @Field()
+    @Field({ nullable: true })
     text: string;
 
     @Field()
