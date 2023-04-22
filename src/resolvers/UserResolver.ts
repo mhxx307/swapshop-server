@@ -1,4 +1,4 @@
-import { STATUS_USER } from './../constants/user';
+import { ORDER, SORT_BY, STATUS_USER } from './../constants/user';
 import * as argon2 from 'argon2';
 import {
     Arg,
@@ -36,7 +36,8 @@ import {
     validateChangePasswordLoggedInput,
     validateRegisterInput,
 } from '../validations';
-import { Like } from 'typeorm';
+import { FindManyOptions, Like } from 'typeorm';
+import { OptionsUser } from '../types/user.type';
 
 @Resolver(() => User)
 export default class UserResolver {
@@ -852,5 +853,36 @@ export default class UserResolver {
             message: 'Updated user avatar successfully',
             user: await user.save(),
         };
+    }
+
+    @Query(() => [User], { nullable: true })
+    async getTopUser(
+        @Arg('optionsUser') optionsUser: OptionsUser,
+    ): Promise<User[] | null> {
+        const { limit } = optionsUser;
+        let { order_by, sort_by } = optionsUser;
+        const realLimit = Math.min(100, Number(limit) || 30);
+
+        const findOptions: FindManyOptions<User> = {
+            take: realLimit,
+            where: {},
+        };
+
+        findOptions.where = {};
+        if (!ORDER.includes(order_by as string)) {
+            order_by = ORDER[0];
+        }
+
+        if (!SORT_BY.includes(sort_by as string)) {
+            sort_by = SORT_BY[0];
+        }
+
+        findOptions.order = {
+            [sort_by as string]: order_by,
+        };
+
+        const users = await User.find(findOptions);
+
+        return users;
     }
 }
