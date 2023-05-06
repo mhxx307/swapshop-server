@@ -109,6 +109,7 @@ export default class ArticleResolver {
                 userId,
                 user_rating,
                 status,
+                all,
                 start_date,
                 end_date,
             } = queryConfig;
@@ -118,7 +119,7 @@ export default class ArticleResolver {
             const realLimit = Math.min(30, Number(limit) || 30);
 
             const findOptions: FindManyOptions<Article> = {
-                take: realLimit,
+                take: all ? undefined : realLimit,
                 relations: ['user'], // add a join with the User entity
                 where: {},
             };
@@ -127,7 +128,7 @@ export default class ArticleResolver {
 
             // date
             if (start_date && !end_date) {
-                findOptions.where.createdDate = Equal(start_date);
+                findOptions.where.createdDate = start_date;
             } else if (start_date && end_date) {
                 findOptions.where.createdDate = Between(start_date, end_date);
             }
@@ -162,6 +163,7 @@ export default class ArticleResolver {
 
             if (status) {
                 findOptions.where.status = status;
+                findOptions.where.isClosed = false;
             }
 
             if (userId) {
@@ -355,7 +357,32 @@ export default class ArticleResolver {
         return {
             code: 200,
             success: true,
-            message: 'User status successfully',
+            message: 'Article status successfully',
+            article: await article.save(),
+        };
+    }
+
+    @Mutation(() => ArticleMutationResponse)
+    @UseMiddleware(checkAuth, checkAdmin)
+    async closedArticle(
+        @Arg('articleId') articleId: string,
+    ): Promise<ArticleMutationResponse> {
+        const article = await Article.findOne({ where: { id: articleId } });
+
+        if (!article) {
+            return {
+                code: 400,
+                success: false,
+                message: 'article no longer exists',
+            };
+        }
+
+        article.isClosed = true;
+
+        return {
+            code: 200,
+            success: true,
+            message: 'Article close successfully',
             article: await article.save(),
         };
     }

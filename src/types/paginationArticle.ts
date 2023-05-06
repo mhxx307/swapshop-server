@@ -56,6 +56,9 @@ export class QueryConfig {
     status?: string;
 
     @Field({ nullable: true })
+    all?: boolean;
+
+    @Field({ nullable: true })
     start_date?: string;
 
     @Field({ nullable: true })

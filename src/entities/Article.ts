@@ -110,6 +110,12 @@ export default class Article extends BaseEntity {
     address: string;
 
     @Field()
+    @Column({
+        default: false,
+    })
+    isClosed: boolean;
+
+    @Field()
     @CreateDateColumn({ type: 'timestamptz' })
     createdDate: Date;
 
