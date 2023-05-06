@@ -89,7 +89,7 @@ const main = async () => {
                   host: process.env.HOST_DB,
               }
             : {
-                  database: 'sencond_chane_db',
+                  database: 'second_chance_db',
                   username: 'postgres',
                   password: '123456',
               }),

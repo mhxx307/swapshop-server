@@ -96,6 +96,18 @@ export default class FavoriteResolver {
                 userId: req.session.userId,
             });
 
+            articleIds.forEach(async (articleId) => {
+                const existingArticle = await Article.findOne({
+                    where: { id: articleId },
+                });
+
+                if (existingArticle) {
+                    existingArticle.favoritesCount =
+                        existingArticle.favoritesCount - 1;
+                    await existingArticle.save();
+                }
+            });
+
             return {
                 code: 200,
                 success: true,
