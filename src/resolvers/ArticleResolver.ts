@@ -10,6 +10,7 @@ import {
 } from 'type-graphql';
 import {
     Between,
+    Equal,
     FindManyOptions,
     In,
     LessThanOrEqual,
@@ -108,6 +109,8 @@ export default class ArticleResolver {
                 userId,
                 user_rating,
                 status,
+                start_date,
+                end_date,
             } = queryConfig;
 
             let { order_by, sort_by } = queryConfig;
@@ -122,6 +125,13 @@ export default class ArticleResolver {
 
             findOptions.where = {};
 
+            // date
+            if (start_date && !end_date) {
+                findOptions.where.createdDate = Equal(start_date);
+            } else if (start_date && end_date) {
+                findOptions.where.createdDate = Between(start_date, end_date);
+            }
+
             // Add a condition to filter by the rating attribute in the User entity
             if (user_rating) {
                 findOptions.where = {
@@ -131,51 +141,30 @@ export default class ArticleResolver {
 
             if (categories && categories.length > 0) {
                 const categoryIds = categories.map((category) => [category]);
-                // findOptions.where = {
-                //     categoryIds: In(categoryIds),
-                // };
                 findOptions.where.categoryIds = In(categoryIds);
             }
 
             if (title) {
-                // findOptions.where = {
-                //     title: Like(`%${title}%`),
-                // };
                 findOptions.where.title = Like(`%${title}%`);
             }
 
             // wrong in between, need add address
             if (Number(price_min) && Number(price_max)) {
-                // findOptions.where = {
-                //     price: Between(Number(price_min), Number(price_max)),
-                // };
                 findOptions.where.price = Between(
                     Number(price_min),
                     Number(price_max),
                 );
             } else if (Number(price_min)) {
-                // findOptions.where = {
-                //     price: MoreThanOrEqual(Number(price_min)),
-                // };
                 findOptions.where.price = MoreThanOrEqual(Number(price_min));
             } else if (Number(price_max)) {
-                // findOptions.where = {
-                //     price: LessThanOrEqual(Number(price_max)),
-                // };
                 findOptions.where.price = LessThanOrEqual(Number(price_max));
             }
 
             if (status) {
-                // findOptions.where = {
-                //     status,
-                // };
                 findOptions.where.status = status;
             }
 
             if (userId) {
-                // findOptions.where = {
-                //     userId,
-                // };
                 findOptions.where.userId = userId;
             }
 

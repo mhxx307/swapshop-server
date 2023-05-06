@@ -68,6 +68,34 @@ export default class NotificationResolver {
         };
     }
 
+    @Subscription(() => NotificationMutationResponse, {
+        topics: 'NOTIFICATION_UPDATE', // topic for public notifications
+    })
+    async updateNotification(
+        @Root() payload: any,
+    ): Promise<NotificationMutationResponse> {
+        const notification = await Notification.findOne({
+            where: { id: payload.notificationId },
+        });
+
+        if (!notification) {
+            return {
+                code: 400,
+                success: false,
+                message: 'notification no longer exists',
+            };
+        }
+
+        notification.content = payload.content;
+
+        return {
+            code: 200,
+            success: true,
+            message: 'Notification update successfully',
+            notification: await notification.save(),
+        };
+    }
+
     @Mutation(() => NotificationMutationResponse)
     async pushPrivateNotification(
         @Arg('content') content: string,
@@ -129,6 +157,16 @@ export default class NotificationResolver {
         return [...notificationsPrivate, ...notificationsPublic];
     }
 
+    @Query(() => [Notification], { nullable: true })
+    async notificationsPublic(): Promise<Notification[] | null> {
+        const notificationsPublic = await Notification.find({
+            where: { userId: null },
+            order: { createdDate: 'DESC' },
+        });
+
+        return notificationsPublic;
+    }
+
     @Mutation(() => NotificationMutationResponse)
     async deleteNotifications(
         @Arg('ids', () => [String]) ids: string[],
@@ -142,6 +180,29 @@ export default class NotificationResolver {
                 code: 200,
                 success: true,
                 message: 'Notification deleted successfully',
+            };
+        } catch (error) {
+            return showError(error);
+        }
+    }
+
+    @Mutation(() => NotificationMutationResponse)
+    async changeNotification(
+        @Arg('content') content: string,
+        @Arg('notificationId') notificationId: string,
+        @PubSub() pubSub: PubSubEngine,
+    ): Promise<NotificationMutationResponse> {
+        try {
+            const payload = {
+                content,
+                notificationId,
+            };
+            await pubSub.publish('NOTIFICATION_UPDATE', payload);
+
+            return {
+                code: 200,
+                success: true,
+                message: 'Notification update successfully',
             };
         } catch (error) {
             return showError(error);
