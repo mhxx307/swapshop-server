@@ -127,6 +127,11 @@ export default class ReportResolver {
         }
     }
 
+    @Query(() => [Report], { nullable: true })
+    async reportsList(): Promise<Report[] | null> {
+        return await Report.find();
+    }
+
     @Query(() => Number, { nullable: true })
     async countReportsForArticle(
         @Arg('articleId') articleId: string,
