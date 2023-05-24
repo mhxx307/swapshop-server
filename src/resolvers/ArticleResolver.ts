@@ -363,7 +363,7 @@ export default class ArticleResolver {
     }
 
     @Mutation(() => ArticleMutationResponse)
-    @UseMiddleware(checkAuth, checkAdmin)
+    @UseMiddleware(checkAuth)
     async closedArticle(
         @Arg('articleId') articleId: string,
     ): Promise<ArticleMutationResponse> {
