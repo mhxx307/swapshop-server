@@ -33,7 +33,10 @@ export default class Comment extends BaseEntity {
     userId!: string;
 
     @Field(() => Article)
-    @ManyToOne(() => Article, (article) => article.comments)
+    @ManyToOne(() => Article, (article) => article.comments, {
+        cascade: true,
+        onDelete: 'CASCADE',
+    })
     article: Article;
 
     @Field(() => User)
