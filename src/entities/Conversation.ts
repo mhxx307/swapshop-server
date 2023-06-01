@@ -38,7 +38,10 @@ export default class Conversation extends BaseEntity {
     articleId!: string;
 
     @Field(() => Article)
-    @ManyToOne(() => Article, (article) => article.conversations)
+    @ManyToOne(() => Article, (article) => article.conversations, {
+        cascade: true,
+        onDelete: 'CASCADE',
+    })
     article: Article;
 
     @OneToMany(() => Message, (message) => message.conversation)
